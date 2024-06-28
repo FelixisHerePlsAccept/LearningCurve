@@ -8,56 +8,83 @@ Social,
 MainLayout,
 Dashboard,
 Randomizer,
+LoadingScreen,
+DBTesting,
+Testing,
 } from './element';
 
 export const ROOT_DASHBOARD = '/customlinktree'
 
 export default function Router() {
+
+    const LoadingSuspense = ({children}) => (
+        <Suspense fallback={<LoadingScreen />}>
+            {children}
+        </Suspense>
+    );
+
     return (
         <Routes>
             {/* Welcome Page */}
             <Route path={ROOT_DASHBOARD} element={
-                <Suspense fallback={<div>Loading...</div>}>
+                <LoadingSuspense>
                     <Welcome1 />
-                </Suspense>
+                </LoadingSuspense>
             } />
+
+            {/* <Route path={`${ROOT_DASHBOARD}/loading`} element={
+                <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingScreen />
+                </Suspense>
+            } /> */}
+            <Route path={`${ROOT_DASHBOARD}/testing`} element={
+                <LoadingSuspense>
+                    <Testing />
+                </LoadingSuspense>
+            }
+            />
 
             {/* Dashboard Components */}
             <Route path={`${ROOT_DASHBOARD}/mainpage/*`} element={
-                <Suspense fallback={<div>Loading...</div>}>
+                <LoadingSuspense>
                     <MainLayout />
-                </Suspense>
+                </LoadingSuspense>
             }>
                 {/* Outlet of Dashboardlayout */}
                 <Route path='dashboard' element={
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingSuspense>
                         <Dashboard />
-                    </Suspense>
+                    </LoadingSuspense>
                 } />
                 <Route path="profile" element={
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingSuspense>
                         <Profile />
-                    </Suspense>
+                    </LoadingSuspense>
                 } />
                 <Route path="drawingport" element={
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingSuspense>
                         <DrawingPort />
-                    </Suspense>
+                    </LoadingSuspense>
                 } />
                 <Route path="social" element={
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingSuspense>
                         <Social />
-                    </Suspense>
+                    </LoadingSuspense>
                 } />
                 <Route path="randomizer" element={
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingSuspense>
                         <Randomizer />
-                    </Suspense>
+                    </LoadingSuspense>
+                } />
+                <Route path='dbtesting' element={
+                    <LoadingSuspense>
+                        <DBTesting />
+                    </LoadingSuspense>
                 } />
                 <Route path='*' element={
-                    <Suspense fallback={<div>Loading...</div>}>
+                    <LoadingSuspense>
                         <NotFound />
-                    </Suspense>
+                    </LoadingSuspense>
                 } />
             </Route>
         </Routes>
