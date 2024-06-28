@@ -1,0 +1,43 @@
+@keyframes rotateBox0deg {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.container {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    /* background-color: black; */
+    overflow: hidden;
+}
+
+.box_animate_0deg {
+    position: absolute;
+    margin: auto;
+    width: 10rem;
+    height: 10rem;
+    background-color: lightgreen;
+    border: 10px solid green;
+    border-radius: 1rem;
+    animation: rotateBox0deg 2s linear infinite;
+}
+
+.box_animate_45deg {
+    position: absolute;
+    margin: auto;
+    width:10rem;
+    height:10rem;
+    background-color: rgb(238, 238, 144);
+    border: 10px solid yellow;
+    border-radius: 1rem;
+    rotate: 45deg;
+    animation: rotateBox0deg 4s linear infinite;
+}
