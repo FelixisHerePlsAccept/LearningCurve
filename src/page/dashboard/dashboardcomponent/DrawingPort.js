@@ -1,33 +1,25 @@
-import { Box, Breadcrumbs, Container, Typography } from '@mui/material'
-import React from 'react'
+import { Box, Breadcrumbs, Container, Typography, useMediaQuery } from '@mui/material'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROOT_DASHBOARD } from '../../../routes/route'
 import { Helmet } from 'react-helmet-async'
+import { ThemeProvider, useTheme } from '@mui/material/styles'
 
 export default function DrawingPort() {
 
+  const theme = useTheme();
+
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
+
   return (
-  <>
-    <Helmet>
-      <title>Drawing Portfolio</title>
-    </Helmet>
-    <Breadcrumbs separator=' | '>
-      <Link to={`${ROOT_DASHBOARD}/mainpage/dashboard`} style={{textDecoration:'none', color:'black'}}>
-        <Typography variant='inherit'>
-          Dashboard
-        </Typography>
-      </Link>
-      <Typography variant='inherit'>
-        DrawingPort
-      </Typography>
-    </Breadcrumbs>
-    <Container sx={{pt:'1rem'}}>
-      <Box>
-        <Typography>
-          Drawing here...
-        </Typography>
-      </Box>
-    </Container>
-  </>
-  )
+    <div>
+      <ThemeProvider theme={theme}>
+      {isLargeScreen ? (
+        <p>This is a large screen or larger.</p>
+      ) : (
+        <p>This is a smaller screen.</p>
+      )}
+      </ThemeProvider>
+    </div>
+  );
 }

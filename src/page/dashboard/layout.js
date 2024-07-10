@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Divider, Grid, Paper, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ROOT_DASHBOARD } from '../../routes/route';
@@ -6,8 +6,8 @@ import { ChevronDoubleRightIcon } from '@heroicons/react/outline';
 
 export default function MainLayout() {
 
-    const DashboardLink = ({to, children}) => {
-        return <NavItem to={to} name={children} />
+    const DashboardLink = ({to, children, sx}) => {
+        return <NavItem to={to} name={children} sx={sx} />
     }
 
     const navigate = useNavigate();
@@ -17,42 +17,47 @@ export default function MainLayout() {
     }
 
     return (
-        <>
-            <Grid container>
-                <Grid item xs={12} md={2}>
-                    <Box sx={{ position:'sticky',p:'2rem', height:'90vh', overflowY:'auto',overflowX:'hidden', top:0}}>
-                        <Stack direction='column' spacing={4}>
-                            <Paper elevation={0} sx={{p:'0 1rem 1rem 1rem', position:'sticky', top:0}}>
+        // <Box sx={{position:'absolute', width:'100%', height:'auto'}}>
+            <Container maxWidth={'xl'}>
+                <Grid container>
+                    <Grid item xs={12} md={2}>
+                        <Box sx={{position:'sticky', top:0, height:'100vh', borderRight:'1px solid gray'}}>
+                            <Box sx={{display:'flex', justifyContent:'center', alignItems:'center', position:'sticky', top:0, bgcolor:'yellow', height:'10%'}}>
                                 <Typography sx={{cursor:'default'}}>
                                     USER: <br/> <strong>Felix Othneal Anak Frank</strong>
                                 </Typography>
-                            </Paper>
-                            {/* Nav List Item should go here */}
-                            <DashboardLink to='dashboard'>Dashboard</DashboardLink>
-                            <DashboardLink to='profile'>Profile</DashboardLink>
-                            <DashboardLink to='drawingport'>Drawing Portfolio</DashboardLink>
-                            <DashboardLink to='social'>Socials</DashboardLink>
-                            <DashboardLink to="randomizer">Randomizer</DashboardLink>
-                            <DashboardLink to='dbtesting'>DB Data</DashboardLink>
-                            <Box sx={{position:'sticky', bottom:0}}>
-                                <Button type="button" variant='contained' onClick={handleRedirect} sx={{borderRadius:'1rem', bgcolor:'red'}}>
+                            </Box>
+                            <Box sx={{bgcolor:'white',height:'80%', overflowY:'auto', overflowX:'hidden'}}>
+                                <Stack direction='column' spacing={5}>
+                                    <Box /> {/* For Spacing  */}
+                                    <DashboardLink to='dashboard' sx={{bgcolor:'skyblue'}}>Dashboard</DashboardLink>
+                                    <DashboardLink to='profile' sx={{bgcolor:'yellow'}}>Profile</DashboardLink>
+                                    <DashboardLink to='drawingport' sx={{bgcolor:'blue'}}>Drawing Portfolio</DashboardLink>
+                                    <DashboardLink to='social' sx={{bgcolor:'magenta'}}>Socials</DashboardLink>
+                                    <DashboardLink to='randomizer' sx={{bgcolor:'rebeccapurple'}}>Randomizer</DashboardLink>
+                                    <DashboardLink to='dbtesting' sx={{bgcolor:'orange'}}>DB Data</DashboardLink>
+                                    <DashboardLink to='randomwithdb' sx={{bgcolor:'pink'}}>Randomizer + DB</DashboardLink>
+                                </Stack>
+                            </Box>
+                            <Paper sx={{display:'flex', position:'sticky', bottom:0, height:'10%' , justifyContent:'center', alignItems:'center'}}>
+                                <Button type="button" variant='contained' onClick={handleRedirect} sx={{borderRadius:'.5rem', bgcolor:'red'}}>
                                     Return to main menu
                                 </Button>
-                            </Box>
-                        </Stack>
-                    </Box>
+                            </Paper>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12} md={10}>
+                        <Box sx={{p:'2rem',height:'inherit',overflowY:'auto'}}>
+                            <Outlet />
+                        </Box>
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} md={10}>
-                    <Box sx={{p:'2rem',height:'inherit',overflowY:'auto'}}>
-                        <Outlet />
-                    </Box>
-                </Grid>
-            </Grid>
-        </>
+            </Container>
+        // </Box>
     )
 }
 
-function NavItem ({to,name}) {
+function NavItem ({to,name, sx}) {
 
     const location = useLocation();
     const isActive = location.pathname === `${ROOT_DASHBOARD}/mainpage/${to}`;
@@ -65,10 +70,10 @@ function NavItem ({to,name}) {
             >
                 <Box
                     sx={{
-                        bgcolor: to === 'dashboard' ? 'skyblue' : to === 'profile' ? 'red' : to === 'drawingport' ? 'yellow' : to === 'social' ? 'paleturquoise' : to === 'randomizer' ? 'purple' : null,
                         borderRadius: '1rem',
                         p:'1rem 1rem 1rem 1rem',
                         width: isActive ? '120%' : '80%',
+                        ...sx,
                     }}
                 >
                     <Grid container>
@@ -79,7 +84,7 @@ function NavItem ({to,name}) {
                         </Grid>
                         {isActive ? 
                         <Grid item xs={12} md={6} align='right' sx={{display:'flex'}}>
-                            <ChevronDoubleRightIcon style={{ position:'relative',left: 10, margin:'auto', width: 20 }} />
+                            <ChevronDoubleRightIcon style={{ position:'relative', margin:'auto', width: 20 }} />
                         </Grid>
                         :
                         (
