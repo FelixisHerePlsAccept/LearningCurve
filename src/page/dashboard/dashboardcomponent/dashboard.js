@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import '../dashboard.css'
 import { RHFTextField } from '../../../component/hook-form';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+// import { yupResolver } from '@hookform/resolvers/yup';
 import FormProvider from '../../../component/hook-form/FormProvider';
 
 export default function Dashboard() {
@@ -23,13 +23,13 @@ export default function Dashboard() {
     })
 
     const {
-        reset,
+        // reset,
         // trigger,
-        watch,
-        control,
-        setValue,
+        // watch,
+        // control,
+        // setValue,
         handleSubmit,
-        formState: {isSubmitting},
+        // formState: {isSubmitting},
     } = methods;
 
     const onSubmit = (data) => {

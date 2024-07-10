@@ -1,5 +1,5 @@
 import PropType from 'prop-types'
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack, Switch } from '@mui/material'
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { Wheel } from 'react-custom-roulette'
 

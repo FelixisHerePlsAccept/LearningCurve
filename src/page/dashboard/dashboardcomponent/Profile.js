@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs, Container, Typography } from '@mui/material'
+import { Breadcrumbs, Container, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ROOT_DASHBOARD } from '../../../routes/route'

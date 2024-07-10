@@ -7,7 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import FormProvider from '../../../component/hook-form/FormProvider'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import { RHFTextField, RHFUploadBox } from '../../../component/hook-form'
-import { display } from '@mui/system'
+import { LoadingButton } from '@mui/lab'
 
 EditDatawithImage.propType = {
     passedData: PropType.array,
@@ -40,6 +40,7 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
     useEffect (() => {
         setEditData(passedData)
         setImagePublic(passedData.data_imagename)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
     const methods = useForm({
@@ -49,7 +50,7 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
 
     const {
         reset,
-        control,
+        // control,
         watch,
         handleSubmit,
         setValue,
@@ -58,6 +59,7 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
 
     useEffect (() => {
         reset(defaultValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[editdata])
 
     const newImage = watch('image')
@@ -151,9 +153,9 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
                             />
                         </Stack>
                     </Box>
-                    <Button variant='contained' fullWidth type='submit'>
+                    <LoadingButton loading={isSubmitting} variant='contained' fullWidth type='submit'>
                         Edit Data!
-                    </Button>
+                    </LoadingButton>
                 </Stack>
             </FormProvider>
         </Box>

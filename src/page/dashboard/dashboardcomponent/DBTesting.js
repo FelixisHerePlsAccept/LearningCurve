@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Breadcrumbs, Container, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Breadcrumbs, Container, Grid, Typography } from "@mui/material";
 import DataList from "./DataList";
 import NewEntry from "./NewEntry";
 // import { useNavigate } from "react-router-dom";
@@ -59,35 +59,35 @@ export default function DBTesting() {
    
 }
 
-function DB () {
+// function DB () {
     
-    const [value, setValue] = useState(0); 
+//     const [value, setValue] = useState(0); 
 
-    const handleChange = (_, newValue) => {
-        setValue(newValue);
-    };
+//     const handleChange = (_, newValue) => {
+//         setValue(newValue);
+//     };
 
-    return (
-        <>
-            <Helmet>
-                <title>DB Management</title>
-            </Helmet>
-            <Breadcrumbs separator= " | ">
-                <Typography variant='inherit'>
-                    Dashboard
-                </Typography>
-                <Typography variant='inherit'>
-                    DB CRUD
-                </Typography>
-            </Breadcrumbs>
-            <Tabs value={value} onChange={handleChange} sx={{pt:'.5rem'}}>
-                <Tab label='New Entry Form' />
-                <Tab label='Data List Table' />
-            </Tabs>
-            <Container maxWidth={'md'} sx={{pt:'.5rem'}}>
-                {value === 0 && <NewEntry />}
-                {value === 1 && <DataList />}
-            </Container>
-        </>
-    );
-}
+//     return (
+//         <>
+//             <Helmet>
+//                 <title>DB Management</title>
+//             </Helmet>
+//             <Breadcrumbs separator= " | ">
+//                 <Typography variant='inherit'>
+//                     Dashboard
+//                 </Typography>
+//                 <Typography variant='inherit'>
+//                     DB CRUD
+//                 </Typography>
+//             </Breadcrumbs>
+//             <Tabs value={value} onChange={handleChange} sx={{pt:'.5rem'}}>
+//                 <Tab label='New Entry Form' />
+//                 <Tab label='Data List Table' />
+//             </Tabs>
+//             <Container maxWidth={'md'} sx={{pt:'.5rem'}}>
+//                 {value === 0 && <NewEntry />}
+//                 {value === 1 && <DataList />}
+//             </Container>
+//         </>
+//     );
+// }

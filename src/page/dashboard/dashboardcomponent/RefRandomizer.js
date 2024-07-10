@@ -48,7 +48,7 @@ export default function RefRandomizer({ reflist, setWinnerRef, onFinishSpin }) {
                             onFinishSpin();
                         }}
                     />
-                    <Button variant='contained' disabled={mustSpin ? true : false} onClick={handleClick} disabled={ref.length > 0 ? false : true}>
+                    <Button variant='contained' disabled={mustSpin ? true : false} onClick={handleClick}>
                         Spin!
                     </Button>
                 </Stack>

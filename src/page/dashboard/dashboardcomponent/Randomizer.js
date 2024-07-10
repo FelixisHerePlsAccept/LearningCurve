@@ -260,6 +260,7 @@ export default function Randomizer() {
                     break;
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ winnerPrint, revealButton, redoSpin ] )
 
     useEffect(() => { 

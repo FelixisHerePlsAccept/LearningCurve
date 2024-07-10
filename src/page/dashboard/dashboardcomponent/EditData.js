@@ -1,13 +1,12 @@
 import * as Yup from 'yup'
-import { Box, Button, Card, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Card, MenuItem, Stack, Typography } from '@mui/material';
 import PropType from 'prop-types'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import FormProvider from '../../../component/hook-form/FormProvider';
-import { RHFCheckbox, RHFRadioGroup, RHFSelect, RHFTextField } from '../../../component/hook-form';
+import { RHFRadioGroup, RHFSelect, RHFTextField } from '../../../component/hook-form';
 import { LoadingButton } from '@mui/lab';
-import { bgcolor } from '@mui/system';
 
 EditData.propType = {
     passedData: PropType.array,
@@ -49,7 +48,7 @@ export default function EditData({ passedData, onClose, onUpdate}) {
     })
 
     const {
-        watch,
+        // watch,
         reset,
         control,
         handleSubmit,
@@ -57,17 +56,19 @@ export default function EditData({ passedData, onClose, onUpdate}) {
         formState: {isSubmitting},
     } = methods;
 
-    const reftype = watch('ref');
+    // const reftype = watch('ref');
 
-    const tagtype = watch('tag');
+    // const tagtype = watch('tag');
 
     useEffect(() => {
         setEditData(passedData);
         setImageURL(passedData.data_url)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect (() => {
         reset(defaultValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [editdata])
 
     useEffect(() => {

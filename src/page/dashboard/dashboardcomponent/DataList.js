@@ -32,7 +32,7 @@ export default function DataList({crud}) {
 
     const [onSort, setOnSort] = useState('')
 
-    const [refresh, setRefresh] = useState(false);
+    // const [refresh, setRefresh] = useState(false);
 
     const [openWarning, setOpenWarning] = useState(false)
 
@@ -67,7 +67,7 @@ export default function DataList({crud}) {
             setView(data);
         })
         .catch(err => console.error(err))
-    },[submit, openSnackbar, refresh, crud])
+    },[submit, openSnackbar, crud])
 
     useEffect (() => {
         fetch('https://backend-r2i9.onrender.com/reference')
@@ -76,7 +76,7 @@ export default function DataList({crud}) {
             setListRef(data)
         })
         .catch(err => console.error(err))
-    },[refresh])
+    },[])
 
     const handleFilterStatus = (event, newValue) => {
         setPage(0)
