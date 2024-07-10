@@ -10,7 +10,6 @@ Dashboard,
 Randomizer,
 LoadingScreen,
 DBTesting,
-Testing,
 RandomizerDb,
 } from './element';
 
