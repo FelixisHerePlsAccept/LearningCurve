@@ -1,4 +1,4 @@
-import { Box, Button, Container, Divider, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Grid, Paper, Stack, Typography } from '@mui/material';
 import React from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ROOT_DASHBOARD } from '../../routes/route';
