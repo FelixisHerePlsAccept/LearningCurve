@@ -11,6 +11,7 @@ Randomizer,
 LoadingScreen,
 DBTesting,
 Testing,
+RandomizerDb,
 } from './element';
 
 export const ROOT_DASHBOARD = '/customlinktree'
@@ -45,7 +46,7 @@ export default function Router() {
             />
 
             {/* Dashboard Components */}
-            <Route path={`${ROOT_DASHBOARD}/mainpage/*`} element={
+            <Route path={`${ROOT_DASHBOARD}/mainpage/`} element={
                 <LoadingSuspense>
                     <MainLayout />
                 </LoadingSuspense>
@@ -81,6 +82,11 @@ export default function Router() {
                         <DBTesting />
                     </LoadingSuspense>
                 } />
+                <Route path={`randomwithdb`} element={
+                    <LoadingSuspense>
+                        <RandomizerDb/>
+                    </LoadingSuspense>
+                }/>
                 <Route path='*' element={
                     <LoadingSuspense>
                         <NotFound />
@@ -94,3 +100,4 @@ export default function Router() {
 function NotFound () {
     return <h2>Nuh uh</h2>
 }
+

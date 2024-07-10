@@ -1,27 +1,34 @@
+import PropTypes from 'prop-types'
+import axios from "axios"
 import * as Yup from 'yup'
 import { LoadingButton } from '@mui/lab'
 import React, { useEffect, useMemo, useState } from 'react'
-import { RHFSelect, RHFTextField } from '../../../component/hook-form'
-import { Button, Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, MenuItem, Snackbar, Stack, TextField, Typography } from '@mui/material'
+import { RHFSelect, RHFTextField, RHFUploadBox } from '../../../component/hook-form'
+import { Box, Button, Card, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, MenuItem, Snackbar, Stack, TextField, Typography } from '@mui/material'
 import { Controller, useForm } from 'react-hook-form'
 import FormProvider from '../../../component/hook-form/FormProvider'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-export default function NewEntry() {
+NewEntry.propTypes = {
+    setCrud: PropTypes.func,
+}
+
+export default function NewEntry({setCrud, onSubmitChange}) {
 
     const [listRef, setListRef] = useState([])
-
     const [view, setView] = useState([])
-    
     const [open, setOpen] = useState(false);
+    const [ProductImage, setImages] = useState('')
+    const [filename, setFileName] = useState()
 
     // const [submit, setSubmit] = useState(false)
 
     const newSchema = Yup.object().shape({
         ref: Yup.number().required("REQUIRED"),
         name: Yup.string().required('REQUIRED'),
-        url: Yup.string().required('REQUIRED'),
+        url: Yup.string().nullable(true),
         origin: Yup.string().nullable(true),
+        tag: Yup.string().nullable(true),
     })
 
     const defaultValue = useMemo(
@@ -29,7 +36,8 @@ export default function NewEntry() {
             ref: null,
             name: '',
             url: '',
-            origin:'',        
+            origin:'',
+            tag:'',
         }),
         []
     )
@@ -42,7 +50,6 @@ export default function NewEntry() {
         const ymd = `${year}-${month}-${day}`
         const hour = date.getHours();
         const minute = date.getMinutes();
-
         const formatted24 = hour.toString().padStart(2, '0');
         const formattedDate = `${ymd} ${formatted24}:${minute}`
         return formattedDate;
@@ -56,7 +63,7 @@ export default function NewEntry() {
     })
 
     useEffect (() => {
-        fetch('http://localhost:1000/reference')
+        fetch('https://backend-r2i9.onrender.com/reference')
         .then(res => res.json())
         .then(data=> {
             setListRef(data);
@@ -65,13 +72,15 @@ export default function NewEntry() {
     },[])
 
     useEffect (() => {
-        fetch('http://localhost:1000/view')
+        fetch('https://backend-r2i9.onrender.com/view')
         .then(res => res.json())
         .then(data=> {
             setView(data);
         })
         .catch(err => console.error(err))
-    },[])
+    },[open])
+
+    console.log('view',view)
 
     const [errorOpen, setErrorOpen] = useState(false);
 
@@ -90,9 +99,10 @@ export default function NewEntry() {
 
     const {
         reset,
-        // watch,
+        // trigger,
+        watch,
         control,
-        // setValue,
+        setValue,
         handleSubmit,
         formState: {isSubmitting},
     } = methods;
@@ -104,19 +114,27 @@ export default function NewEntry() {
         }
     }
 
+    const previewUrl = watch('url')
+
+    const reftype = watch('ref')
+
+    const image = watch('image')
+
+    console.log('image', image)
+
+    console.log(previewUrl)
+
     const onSubmit = async (data) => {
         const dateTime = CreatedDate();
-        const noSimilar = view.find((same) => same.data_name === data.name)
-        const noSimilar2 = view.find((same) => same.ref_id === data.ref_id)
-        console.log(noSimilar, noSimilar2)
-        console.log('data',data, typeof dateTime)
-        if (noSimilar && noSimilar2) {
+        const noSimilar = view.find((same) => same.data_name === data.name);
+        const similarRef = noSimilar && noSimilar.ref_id === data.ref ? noSimilar : null;
+        if (similarRef) {
             handleOpenError();
-            console.log('failed')
-            return; // Return early if a similar name exists
+            console.log('similarRef returns: ', similarRef);
+            return;
         }
         try {
-            const response = await fetch('http://localhost:1000/create', {
+            const response = await fetch('https://backend-r2i9.onrender.com/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,12 +145,23 @@ export default function NewEntry() {
                     url: data.url,
                     origin: data.origin,
                     datetime: dateTime,
+                    tag: data.tag,
                     // nameAtServerJs = nameHere
                 })
             })
             if (response.ok) {
-                console.log('SUCCESSFULLY PASSED');
+                if(data.ref === 8){
+                    console.log('data.ref', data.ref, 'data_rowid', data.name)
+                    handleUpload(data.name);
+                }
+                else {
+                    console.log('SUCCESSFULLY PASSED');
+                }
+                setImages('');
+                setValue('image','');
                 clearInput();
+                setCrud(prev=>!prev);
+                onSubmitChange();
             }
             else {
                 console.log('FAILED ENTRANCE')
@@ -142,6 +171,36 @@ export default function NewEntry() {
         catch (error) {
             console.error('FETCH ERROR: ', error)
         }
+    }
+
+    const handleUpload = (name) => {
+        console.log('data.name', name)
+        console.log('handleUpload here')
+        const formdata = new FormData()
+        formdata.append('image', filename)
+        formdata.append('name', name)
+        axios.post('https://backend-r2i9.onrender.com/upload', formdata)
+        .then()
+        .catch(err=>console.log(err))
+    }
+
+    const handleDrop = (acceptedFile) => {
+        const file = acceptedFile[0];
+        setFileName(file)
+        if(file) {
+            const previewUrl = URL.createObjectURL(file);
+            console.log('previewUrl',previewUrl)
+            setImages(previewUrl)
+            setValue('image', previewUrl, {shouldValidate:true})
+        }
+    }
+    console.log('filename', filename)
+
+    const removeImage = () => {
+        URL.revokeObjectURL(ProductImage)
+        setImages('');
+        setFileName();
+        setValue('image','',{shouldValidate:true})
     }
     
     return (
@@ -171,25 +230,66 @@ export default function NewEntry() {
                 </DialogActions>
             </Dialog>
             <Card elevation={3}>
-                <Grid container sx={{p:'1rem'}}>
-                    <Grid item xs={12} md={4}>
-                        <Typography variant='h5'>
-                            New Data Entry
-                        </Typography>
-                    </Grid>
-                    <Grid item xs={12} md={8}>
-                        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+                <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+                    <Grid container sx={{p:'1rem'}} spacing={2}>
+                        <Grid item xs={12} md={5}>
+                            <Typography variant='h5' sx={{pb:'3rem'}}>
+                                New Data Entry
+                            </Typography>
+                            {reftype !== null && reftype !== 3 && previewUrl ? (
+                                <Box sx={{maxHeight:'40vh', height:'auto', width:'100%', borderRadius:'2rem', justifyContent:'center', alignItems:'center', border:'1px solid black'}}>
+                                <Stack direction={'column'} spacing={3} justifyContent={'center'} sx={{p:'1rem'}}>
+                                    <Box sx={{width:'100%', height:'auto'}}>
+                                        <Typography variant='h6' sx={{textAlign:'center'}}>
+                                            Image Preview
+                                        </Typography>
+                                        <Box sx={{display:'flex' ,justifyContent:'center', alignItems:'center'}} >
+                                            <img src={previewUrl} alt='' style={{height:'15rem', width: '15rem', borderRadius:'50%'}} />
+                                        </Box>
+                                    </Box>
+                                </Stack>
+                            </Box>
+                            ):
+                                reftype === 8 ? (
+                                    ProductImage === '' || null ?
+                                    (
+                                        <Stack direction={'column'} spacing={5} sx={{justifyContent:'center', alignItems:'center'}}>
+                                            <Typography>
+                                                Drop Image Here
+                                            </Typography>
+                                            <RHFUploadBox
+                                                // name="images"
+                                                name="image"
+                                                maxSize={5000000}
+                                                onDrop={handleDrop}
+                                                sx={{
+                                                    width:'10rem',
+                                                    height:'10rem'
+                                                }}
+                                                // multiple={true}
+                                                // files={false}
+                                            />
+                                        </Stack>
+                                    )
+                                :
+                                (
+                                    <Grid container>
+                                        <Stack direction="row" spacing={3}>
+                                            {ProductImage && (
+                                                <Grid item xs={12}>
+                                                    <img src={ProductImage} alt="Uploaded" style={{margin:'5px 0 5px 0 ', borderRadius:'1rem', width:'50rem', height:'50rem'}} />
+                                                    <button type="button" onClick={removeImage}>Remove</button>
+                                                </Grid>
+                                            )}
+                                        </Stack>
+                                    </Grid>
+                                )
+                            ):
+                            null
+                            }
+                        </Grid>
+                        <Grid item xs={12} md={7}>
                             <Stack direction={'column'} spacing={3}>
-                                {/* <RHFSelect native name='ref' label='Reference Type' placeholder='Reference'>
-                                    <option value={null} />
-                                    {listRef.length > 0 && 
-                                    listRef.map((ref,i)=>(
-                                        <option key={i} value={ref.ref_id}>
-                                            {ref.ref_name}
-                                        </option>
-                                    ))
-                                    }
-                                </RHFSelect> */}
                                 <Stack direction={'row'} sx={{justifyContent:'left', alignItems:'center'}}>
                                     <Typography sx={{width:'fit-content'}}>
                                         Date of entrance:&nbsp;&nbsp;
@@ -210,6 +310,7 @@ export default function NewEntry() {
                                             {...field}
                                             label="Reference Type"
                                             placeholder="Reference"
+                                            
                                         >
                                             {/* <MenuItem value={null} /> */}
                                             {listRef.map((ref) => (
@@ -220,27 +321,55 @@ export default function NewEntry() {
                                         </RHFSelect>
                                     )}
                                 />
-                                <RHFTextField
+                                {reftype ? (
+                                    <>
+                                    <RHFTextField
                                     name='name'
                                     label='Name'
-                                />
-                                <RHFTextField
-                                    name='url'
-                                    label='Picture URL'
-                                    multiline
-                                    minRows={2}
-                                />
-                                <RHFTextField
-                                    name='origin'
-                                    label='Origin'
-                                />
-                                <LoadingButton type='submit' variant='contained' loading={isSubmitting}>
-                                    Create new list
-                                </LoadingButton>
+                                    />
+                                    {reftype !== 8 ? (
+                                        <RHFTextField
+                                            name='url'
+                                            label={reftype === 3 ? 'Website URL' : 'Picture URL'}
+                                            multiline
+                                            minRows={2}
+                                        />
+                                    ) : (
+                                        null
+                                    )}
+                                    <Controller
+                                        name="tag"
+                                        control={control}
+                                        defaultValue={null}
+                                        render={({ field }) => (
+                                            <RHFSelect
+                                                {...field}
+                                                label="Tag"
+                                                placeholder="Tag"
+                                            >
+                                                <MenuItem value={'SFW'}>SFW</MenuItem>
+                                                <MenuItem value={'NSFW'}>NSFW</MenuItem>
+                                                <MenuItem value={'Borderline'}>Borderline</MenuItem>
+                                            </RHFSelect>
+                                        )}
+                                    />
+                                    <RHFTextField
+                                        name='origin'
+                                        label='Origin'
+                                    />
+                                    <LoadingButton type='submit' variant='contained' loading={isSubmitting}>
+                                        Create new list
+                                    </LoadingButton>
+                                    </>
+                                )
+                                :
+                                (
+                                    null
+                                )}
                             </Stack>
-                        </FormProvider>
+                        </Grid>
                     </Grid>
-                </Grid>
+                </FormProvider>
             </Card>
         </>
     )

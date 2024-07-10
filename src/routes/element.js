@@ -16,4 +16,5 @@ export const Randomizer = React.lazy(() => import('../page/dashboard/dashboardco
 
 // DB testing
 export const DBTesting = React.lazy(() => import('../page/dashboard/dashboardcomponent/DBTesting'));
+export const RandomizerDb = React.lazy(() => import ('../page/dashboard/dashboardcomponent/RandomizerDb'));
 export const Testing = React.lazy(() => import('../page/dashboard/mock/Testing'));
