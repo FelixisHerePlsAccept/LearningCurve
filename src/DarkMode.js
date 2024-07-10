@@ -1,5 +1,5 @@
 import { CheckCircleIcon, ShareIcon } from "@heroicons/react/outline";
-import React, { useState } from "react";
+import React from "react";
 // import "./DarkMode.css";
 
 export default function DarkMode () {
