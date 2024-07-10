@@ -37,14 +37,6 @@ export default function Router() {
                     <LoadingScreen />
                 </Suspense>
             } /> */}
-            <Route path={`${ROOT_DASHBOARD}/testing`} element={
-                <LoadingSuspense>
-                    <Testing />
-                </LoadingSuspense>
-            }
-            />
-
-            
 
             {/* Dashboard Components */}
             <Route path={`${ROOT_DASHBOARD}/mainpage/`} element={
