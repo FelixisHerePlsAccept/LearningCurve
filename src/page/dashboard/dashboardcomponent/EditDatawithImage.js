@@ -2,11 +2,11 @@ import * as Yup from 'yup'
 import PropType from 'prop-types'
 import axios from 'axios'
 import React, { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import FormProvider from '../../../component/hook-form/FormProvider'
-import { Box, Button, Stack, Typography } from '@mui/material'
-import { RHFTextField, RHFUploadBox } from '../../../component/hook-form'
+import { Box, Button, Card, Stack, Typography } from '@mui/material'
+import { RHFRadioGroup, RHFTextField, RHFUploadBox } from '../../../component/hook-form'
 import { LoadingButton } from '@mui/lab'
 
 EditDatawithImage.propType = {
@@ -33,6 +33,7 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
             name: editdata?.data_name || '',
             imagename: editdata?.data_imagename || '',
             rowid: editdata?.data_rowid || null,
+            tag: editdata?.data_tag || '',
         }),
         [editdata]
     )
@@ -50,7 +51,7 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
 
     const {
         reset,
-        // control,
+        control,
         watch,
         handleSubmit,
         setValue,
@@ -98,6 +99,12 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
         console.log('imagepublic')
     }
 
+    const RADIO_TAG = [
+        {label: 'SFW', value: 'SFW'},
+        {label: 'NSFW', value: 'NSFW'},
+        {label: 'Borderline', value:'Borderline'}
+    ]
+
     console.log(imageChange)
 
     return (
@@ -128,6 +135,26 @@ export default function EditDatawithImage({passedData, onClose, onUpdate}) {
                         name='name'
                         placeholder='Image Title'
                     />
+                    <Card elevation={0} sx={{p:'.5rem', border:'1px solid rgb(200,200,200)'}}>
+                            <Stack direction={'row'} spacing={4}>
+                                <Typography sx={{display:'flex', justifyContent:'left', alignItems:'center'}}>
+                                    Tag: 
+                                </Typography>
+                                <Controller
+                                    name='tag'
+                                    control={control}
+                                    defaultValue={null}
+                                    render = {({ field }) => (
+                                        <RHFRadioGroup
+                                            {...field}
+                                            options={RADIO_TAG}
+                                            row
+                                        />
+                                    )}
+                                />
+                                
+                            </Stack>
+                        </Card>
                     <Box 
                         sx={{
                             display:'flex',
