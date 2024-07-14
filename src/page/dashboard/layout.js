@@ -34,7 +34,7 @@ export default function MainLayout() {
                                     <DashboardLink to='profile' sx={{bgcolor:'yellow'}}>Profile</DashboardLink>
                                     <DashboardLink to='drawingport' sx={{bgcolor:'blue'}}>Drawing Portfolio</DashboardLink>
                                     <DashboardLink to='social' sx={{bgcolor:'magenta'}}>Socials</DashboardLink>
-                                    <DashboardLink to='randomizer' sx={{bgcolor:'rebeccapurple'}}>Randomizer</DashboardLink>
+                                    {/* <DashboardLink to='randomizer' sx={{bgcolor:'rebeccapurple'}}>Randomizer</DashboardLink> */}
                                     <DashboardLink to='dbtesting' sx={{bgcolor:'orange'}}>DB Data</DashboardLink>
                                     <DashboardLink to='randomwithdb' sx={{bgcolor:'pink'}}>Randomizer + DB</DashboardLink>
                                 </Stack>

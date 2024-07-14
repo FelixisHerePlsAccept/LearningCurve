@@ -7,7 +7,7 @@ DrawingPort,
 Social,
 MainLayout,
 Dashboard,
-Randomizer,
+// Randomizer,
 LoadingScreen,
 DBTesting,
 RandomizerDb,
@@ -65,11 +65,11 @@ export default function Router() {
                         <Social />
                     </LoadingSuspense>
                 } />
-                <Route path="randomizer" element={
+                {/* <Route path="randomizer" element={
                     <LoadingSuspense>
                         <Randomizer />
                     </LoadingSuspense>
-                } />
+                } /> */}
                 <Route path='dbtesting' element={
                     <LoadingSuspense>
                         <DBTesting />
