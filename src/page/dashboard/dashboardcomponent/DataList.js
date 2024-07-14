@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
 import { emptyRows, TableEmptyRows, TablePaginationCustom, useTable } from '../../../component/table'
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Snackbar, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Typography } from '@mui/material'
-import { DotsVerticalIcon, PencilAltIcon, SearchCircleIcon, TrashIcon } from '@heroicons/react/outline'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Snackbar, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography } from '@mui/material'
+import { DotsVerticalIcon, DownloadIcon, PencilAltIcon, SearchCircleIcon, TrashIcon } from '@heroicons/react/outline'
 import EditData from './EditData'
 import EditDatawithImage from './EditDatawithImage'
 import TableNoData from '../../../component/table/TableNoData'
+import { saveAs } from 'file-saver'
 
 DataList.propTypes = {
     crud: PropTypes.bool,
@@ -77,6 +78,14 @@ export default function DataList({crud}) {
         })
         .catch(err => console.error(err))
     },[])
+
+    const CreatedDate = () => {
+        const date = new Date()
+        const year = date.getUTCFullYear();
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Months are zero-based (0 = January)
+        const day = date.getUTCDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     const handleFilterStatus = (event, newValue) => {
         setPage(0)
@@ -165,6 +174,13 @@ export default function DataList({crud}) {
         setOpenWarning(true)
     }
 
+    const saveJsonToFile = () => {
+        const json = JSON.stringify(view, null, 2);
+        const blob = new Blob([json], {type: 'application/json'});
+        const filename = `data_${CreatedDate()}.json`
+        saveAs(blob, filename)
+    }
+
     const isNotFound = (!dataFiltered.length && !!filterName) || (!dataFiltered.length && !!filterStatus)
 
     console.log('onSort', onSort)
@@ -226,10 +242,13 @@ export default function DataList({crud}) {
             <Tabs 
                 value={filterStatus}
                 onChange={handleFilterStatus}
+                variant='scrollable'
+                scrollButtons="auto"
                 sx={{
                     borderTopLeftRadius:'1rem',
                     borderTopRightRadius:'1rem',
-                    bgcolor:'gray'
+                    bgcolor:'gray',
+                    // border:'1px solid rgb(200,200,200)',
                 }}
             >
                 <Tab label={`All (${view.length})`} value={'all'} />
@@ -262,6 +281,11 @@ export default function DataList({crud}) {
                         )
                     }}
                 />
+                <Tooltip title="Save Data As Json">
+                    <Button onClick={saveJsonToFile} variant='outlined' sx={{border:'1px solid rgb(200,200,200)'}}>
+                        <DownloadIcon style={{width:'20px',height:'20px', }} />
+                    </Button>
+                </Tooltip>
                 {filterName || onSort ? <Button onClick={()=>{setFilterName('');setOnSort('')}}><TrashIcon style={{color:'red', width:'30px', height:'30px'}}/></Button> : null}
             </Stack>
             

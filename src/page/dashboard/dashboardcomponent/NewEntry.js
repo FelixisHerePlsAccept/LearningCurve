@@ -118,6 +118,8 @@ export default function NewEntry({setCrud, onSubmitChange}) {
 
     const reftype = watch('ref')
 
+    const twitter_name = watch('name')
+
     const image = watch('image')
 
     console.log('image', image)
@@ -202,7 +204,11 @@ export default function NewEntry({setCrud, onSubmitChange}) {
         setFileName();
         setValue('image','',{shouldValidate:true})
     }
-    
+
+    const handleOpenWindow = () => {
+        window.open(`https://x.com/${twitter_name}/photo`, '_blank', 'width=500,height=500,top=300,left=1275')
+    }
+
     return (
         <>
             <Snackbar
@@ -327,6 +333,16 @@ export default function NewEntry({setCrud, onSubmitChange}) {
                                     name='name'
                                     label='Name'
                                     />
+                                    {(reftype === 1 || reftype === 2) && twitter_name && (
+                                        <Stack direction={'row'}>
+                                            <Typography variant='caption'>
+                                                Show user image?
+                                            </Typography>
+                                            <Button onClick={handleOpenWindow}>
+                                                Open
+                                            </Button>
+                                        </Stack>
+                                    )}
                                     {reftype !== 8 ? (
                                         <RHFTextField
                                             name='url'

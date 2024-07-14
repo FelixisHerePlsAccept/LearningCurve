@@ -7,6 +7,8 @@ import DataRandomizer from './DataRandomizer'
 import xIcon from '../mock/x.png'
 import './borderAnimate.css'
 
+const TAG_OPTION = ['All', 'SFW', 'NSFW', 'Borderline']
+
 export default function RandomizerDb() {
 
     const [ref, setRef] = useState([]);
@@ -17,6 +19,7 @@ export default function RandomizerDb() {
     const [revealAnswer, setRevealAnswer] = useState(false);
     const [winnerData, setWinnerData] = useState([]);
     const [warning, setWarning] = useState(false);
+    const [datatag, setDataTag] = useState('All');
 
     useEffect (() => {
         fetch('https://backend-r2i9.onrender.com/reference')
@@ -44,6 +47,7 @@ export default function RandomizerDb() {
     const dataFiltered = applyFilter ({
         inputData: dbdata,
         ref: winnerRef,
+        tag: datatag,
     })
 
     const winnerArray = dataFiltered.map((windata,i) => ({
@@ -73,6 +77,7 @@ export default function RandomizerDb() {
         setShowFirstWheel(true) // show first wheel again
         setShowSecondWheel(false) // hide second wheel
         setRevealAnswer(false) // reset winner display
+        setDataTag('All')
     }
 
     const redoSecond = () => {
@@ -101,6 +106,10 @@ export default function RandomizerDb() {
     const handleRedirect = () =>{
         window.open(`https://x.com/${winnerData.option}/media`, '_blank')
         handleCloseWarning();
+    }
+
+    const handleTagSelect = (event) => {
+        setDataTag(event.target.value)
     }
 
     console.log('dataFiltered', dataFiltered)
@@ -146,22 +155,35 @@ export default function RandomizerDb() {
         <Container maxWidth={'md'} sx={{p:'2rem'}}>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                    <FormControl sx={{width:'100%'}}>
-                        <InputLabel>
-                            Select Input
-                        </InputLabel>
-                        <Select
-                            value={winnerRef}
-                            onChange={handleRefSelect}
-                            disabled={!!revealAnswer}
-                        >
-                            {filteredRef && filteredRef.map((ref) =>(
-                                <MenuItem key={ref.ref_id} value={ref.ref_name}>
-                                    {ref.ref_name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Stack direction={'row'} spacing={2}>
+                        <FormControl sx={{width:'50%'}}>
+                            <InputLabel>
+                                Select Input
+                            </InputLabel>
+                            <Select
+                                value={winnerRef}
+                                onChange={handleRefSelect}
+                            >
+                                {filteredRef && filteredRef.map((ref) =>(
+                                    <MenuItem key={ref.ref_id} value={ref.ref_name}>
+                                        {ref.ref_name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        <FormControl sx={{width:'50%'}}>
+                            <InputLabel>
+                                Data Filter
+                            </InputLabel>
+                            <Select value={datatag} onChange={handleTagSelect}>
+                                {TAG_OPTION && TAG_OPTION.map((tag) => (
+                                    <MenuItem value={tag}>
+                                        {tag}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Stack>
                 </Grid>
                 {winnerRef ? (
                     <Grid item xs={12} md={6} align={'right'}>
@@ -265,11 +287,17 @@ export default function RandomizerDb() {
     )
 }
 
-function applyFilter ({inputData, ref}) {
+function applyFilter ({inputData, ref, tag}) {
     if(ref){
         inputData = inputData.filter((name)=>{
             const filter1 = name.ref_name === ref;
             return filter1;
+        })
+    }
+    if(tag !== 'All') {
+        inputData = inputData.filter((data) => {
+            const filteredtag = data.data_tag === tag;
+            return filteredtag;
         })
     }
     return inputData
