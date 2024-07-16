@@ -174,7 +174,7 @@ export default function RandomizerDb() {
                             </Select>
                         </FormControl>
                         <Autocomplete
-                            sx={{width:'50%'}}
+                            fullWidth
                             multiple
                             options={TAG_OPTION}
                             getOptionLabel={(option) => option.tag}
