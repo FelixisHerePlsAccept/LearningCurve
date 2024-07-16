@@ -1,4 +1,4 @@
-import { Box, Breadcrumbs, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, Stack, Typography } from '@mui/material'
+import { Autocomplete, Box, Breadcrumbs, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Grid, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import LoadingScreen from '../../../loading_screen/LoadingScreen'
 import RefRandomizer from './RefRandomizer'
@@ -7,7 +7,17 @@ import DataRandomizer from './DataRandomizer'
 import xIcon from '../mock/x.png'
 import './borderAnimate.css'
 
-const TAG_OPTION = ['All', 'SFW', 'NSFW', 'Borderline']
+const TAG_OPTION = [
+    {
+        tag:'Borderline'
+    },
+    {
+        tag:'SFW',
+    },
+    {
+        tag:'NSFW'
+    }
+]
 
 export default function RandomizerDb() {
 
@@ -19,7 +29,7 @@ export default function RandomizerDb() {
     const [revealAnswer, setRevealAnswer] = useState(false);
     const [winnerData, setWinnerData] = useState([]);
     const [warning, setWarning] = useState(false);
-    const [datatag, setDataTag] = useState('All');
+    const [datatag, setDataTag] = useState([]);
 
     useEffect (() => {
         fetch('https://backend-r2i9.onrender.com/reference')
@@ -47,7 +57,7 @@ export default function RandomizerDb() {
     const dataFiltered = applyFilter ({
         inputData: dbdata,
         ref: winnerRef,
-        tag: datatag,
+        datatag,
     })
 
     const winnerArray = dataFiltered.map((windata,i) => ({
@@ -77,7 +87,7 @@ export default function RandomizerDb() {
         setShowFirstWheel(true) // show first wheel again
         setShowSecondWheel(false) // hide second wheel
         setRevealAnswer(false) // reset winner display
-        setDataTag('All')
+        setDataTag([])
     }
 
     const redoSecond = () => {
@@ -108,17 +118,9 @@ export default function RandomizerDb() {
         handleCloseWarning();
     }
 
-    const handleTagSelect = (event) => {
-        setDataTag(event.target.value)
+    const handleMultiTag = (_,value) => {
+        setDataTag(value)
     }
-
-    console.log('dataFiltered', dataFiltered)
-    console.log('DBDATA', dbdata)
-    console.log('winnerRef', winnerRef)
-    console.log('refArray', refArray)
-    console.log('showFirstWheel', showFirstWheel)
-    console.log('winnerArray', winnerArray)
-    console.log('winnerData', winnerData)
 
     return (
         <>
@@ -171,18 +173,20 @@ export default function RandomizerDb() {
                                 ))}
                             </Select>
                         </FormControl>
-                        <FormControl sx={{width:'50%'}}>
-                            <InputLabel>
-                                Data Filter
-                            </InputLabel>
-                            <Select value={datatag} onChange={handleTagSelect}>
-                                {TAG_OPTION && TAG_OPTION.map((tag) => (
-                                    <MenuItem value={tag}>
-                                        {tag}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Autocomplete
+                            sx={{width:'50%'}}
+                            multiple
+                            options={TAG_OPTION}
+                            getOptionLabel={(option) => option.tag}
+                            filterSelectedOptions
+                            onChange={handleMultiTag}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Filter by Tag"
+                                />
+                            )}
+                        />
                     </Stack>
                 </Grid>
                 {winnerRef ? (
@@ -287,18 +291,18 @@ export default function RandomizerDb() {
     )
 }
 
-function applyFilter ({inputData, ref, tag}) {
+function applyFilter ({inputData, ref, datatag}) {
     if(ref){
         inputData = inputData.filter((name)=>{
             const filter1 = name.ref_name === ref;
             return filter1;
         })
     }
-    if(tag !== 'All') {
-        inputData = inputData.filter((data) => {
-            const filteredtag = data.data_tag === tag;
-            return filteredtag;
-        })
+    if (datatag && datatag.length > 0) {
+        let filterdata = inputData.filter((data) => 
+            datatag.some((tag) => data.data_tag === tag.tag)
+        );
+        return filterdata;
     }
     return inputData
 }

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { emptyRows, TableEmptyRows, TablePaginationCustom, useTable } from '../../../component/table'
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Snackbar, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography } from '@mui/material'
 import { DotsVerticalIcon, DownloadIcon, PencilAltIcon, SearchCircleIcon, TrashIcon } from '@heroicons/react/outline'
@@ -7,6 +7,8 @@ import EditData from './EditData'
 import EditDatawithImage from './EditDatawithImage'
 import TableNoData from '../../../component/table/TableNoData'
 import { saveAs } from 'file-saver'
+
+const TAG_OPTION = ['All','SFW','Borderline', 'NSFW']
 
 DataList.propTypes = {
     crud: PropTypes.bool,
@@ -33,11 +35,13 @@ export default function DataList({crud}) {
 
     const [onSort, setOnSort] = useState('')
 
-    // const [refresh, setRefresh] = useState(false);
+    const [datatag, setDataTag] = useState('SFW') //sfw is the main view
 
     const [openWarning, setOpenWarning] = useState(false)
 
     const [selected, setSelected] = useState([]) //take object
+
+    const tableContainerRef = useRef(null)
 
     const dataWithNum = view && view.map((data,i) => ({
         num: i + 1,
@@ -49,15 +53,24 @@ export default function DataList({crud}) {
         filterStatus,
         filterName,
         onSort,
+        tag: datatag,
     })
 
     const {
         page,
         rowsPerPage,
         setPage,
-        onChangePage,
+        // onChangePage,
         onChangeRowsPerPage,
     } = useTable()
+
+    const onChangePage = useCallback((event, newPage) => {
+        setPage(newPage);
+        if(tableContainerRef.current) {
+            tableContainerRef.current.scrollTop = 0
+        }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
 
     const dataInPage = dataFiltered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -98,8 +111,6 @@ export default function DataList({crud}) {
     }
 
     const handleDelete = async (deleteName) => {
-        // const deletedID = deleteName.data_rowid;
-        // console.log('deleteName', deletedID)
         try {
             const response = await fetch('https://backend-r2i9.onrender.com/delete', {
                 method:'DELETE',
@@ -111,7 +122,6 @@ export default function DataList({crud}) {
                 })
             })
             if (response.ok) {
-                console.log('Delete Success')
                 setSubmit(false)
             }
             else{
@@ -132,14 +142,11 @@ export default function DataList({crud}) {
         setOpenPopover(event.currentTarget)
     }
 
-    console.log('openPopever', openPopover)
-
     const handleClosePopover = () => {
         setOpenPopover(null);
     }
 
     const handleEdit = () => {
-        console.log('selected',passingData)
         setOpen(true)
     }
 
@@ -148,7 +155,6 @@ export default function DataList({crud}) {
     }
 
     const handleSelected = (data) => {
-        console.log('handleSelected', data)
         setPassingData(data)
     }
 
@@ -181,9 +187,11 @@ export default function DataList({crud}) {
         saveAs(blob, filename)
     }
 
-    const isNotFound = (!dataFiltered.length && !!filterName) || (!dataFiltered.length && !!filterStatus)
+    const handleTag = (event) => {
+        setDataTag(event.target.value)
+    }
 
-    console.log('onSort', onSort)
+    const isNotFound = (!dataFiltered.length && !!filterName) || (!dataFiltered.length && !!filterStatus)
 
     return (
         <>
@@ -267,6 +275,18 @@ export default function DataList({crud}) {
                         <MenuItem value="Date Created">Date Created</MenuItem>
                     </Select>
                 </FormControl>
+                <FormControl sx={{width:'35%'}}>
+                    <InputLabel>
+                        Data Filter
+                    </InputLabel>
+                    <Select value={datatag} onChange={handleTag}>
+                        {TAG_OPTION && TAG_OPTION.map((tag) => (
+                            <MenuItem value={tag}>
+                                {tag}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
                 <TextField
                     fullWidth
                     placeholder='Search...'
@@ -286,10 +306,10 @@ export default function DataList({crud}) {
                         <DownloadIcon style={{width:'20px',height:'20px', }} />
                     </Button>
                 </Tooltip>
-                {filterName || onSort ? <Button onClick={()=>{setFilterName('');setOnSort('')}}><TrashIcon style={{color:'red', width:'30px', height:'30px'}}/></Button> : null}
+                {filterName || onSort || datatag !== 'All' ? <Button onClick={()=>{setFilterName('');setOnSort(''); setDataTag('All')}}><TrashIcon style={{color:'red', width:'30px', height:'30px'}}/></Button> : null}
             </Stack>
             
-            <TableContainer sx={{maxHeight:'57vh', overflow:'auto'}}>
+            <TableContainer ref={tableContainerRef} sx={{maxHeight:'57vh', overflow:'auto'}}>
             {/* <Box sx={{height:'57vh', overflow:'auto'}}> */}
                 <Table>
                     <TableHead sx={{position:'sticky', top:0, zIndex:2, bgcolor:'grey'}}>
@@ -401,7 +421,7 @@ export default function DataList({crud}) {
     )
 }
 
-function applyfilter ({ inputData, filterStatus, filterName, onSort }) {
+function applyfilter ({ inputData, filterStatus, filterName, onSort, tag }) {
     if (filterStatus !== 'all') {
         inputData = inputData.filter((data)=>data.ref_name === filterStatus)
     }
@@ -420,6 +440,12 @@ function applyfilter ({ inputData, filterStatus, filterName, onSort }) {
     }
     else {
         inputData.sort((a,b) => a.num - b.num)
+    }
+    if(tag !== 'All') {
+        inputData = inputData.filter((data)=>{
+            const filteredData = data.data_tag === tag;
+            return filteredData
+        })
     }
 
     return inputData;
