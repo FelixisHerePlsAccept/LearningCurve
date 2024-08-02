@@ -1,20 +1,18 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
+import LoadingScreen from '../loading_screen';
 
-// Loading Screen
-export const LoadingScreen = React.lazy(() => import('../loading_screen/LoadingScreen'));
+const Loadable = (Component) => (props) => (
+    <Suspense fallback={<LoadingScreen />}>
+        <Component {...props} />
+    </Suspense>
+)
 
 // Main Entry
-export const Welcome1 = React.lazy(() => import('../page/welcome/Welcome'));
+export const Welcome1 = Loadable(lazy(() => import('../page/welcome/Welcome')));
+export const Login = Loadable(lazy(() => import('../page/login')));
+export const DataList = Loadable(lazy(() => import('../page/dashboard/newComponent/DataList')));
+export const EditData = Loadable(lazy(() => import('../page/dashboard/newComponent/EditData')));
+export const NewEntry = Loadable(lazy(() => import('../page/dashboard/newComponent/NewEntry')));
 
 // Dashboard Component
-export const MainLayout = React.lazy(() => import('../page/dashboard/layout'));
-export const Dashboard = React.lazy(() => import('../page/dashboard/dashboardcomponent/dashboard'));
-export const Profile = React.lazy(() => import('../page/dashboard/dashboardcomponent/Profile'));
-export const DrawingPort = React.lazy(() => import('../page/dashboard/dashboardcomponent/DrawingPort'));
-export const Social = React.lazy(() => import('../page/dashboard/dashboardcomponent/Social'));
-export const Randomizer = React.lazy(() => import('../page/dashboard/dashboardcomponent/Randomizer'));
-
-// DB testing
-export const DBTesting = React.lazy(() => import('../page/dashboard/dashboardcomponent/DBTesting'));
-export const RandomizerDb = React.lazy(() => import ('../page/dashboard/dashboardcomponent/RandomizerDb'));
-// export const Testing = React.lazy(() => import('../page/dashboard/mock/Testing'));
+export const MainLayout = Loadable(lazy(() => import('../page/dashboard/layout')));

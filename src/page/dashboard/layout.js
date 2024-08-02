@@ -1,10 +1,14 @@
 import { Box, Button, Container, Grid, Paper, Stack, Typography } from '@mui/material';
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ROOT_DASHBOARD } from '../../routes/route';
+import { ROOT_DASHBOARD } from '../../routes';
 import { ChevronDoubleRightIcon } from '@heroicons/react/outline';
+import { PATH_MAIN } from '../../routes/paths';
+import AuthContext from '../../AuthProvider/AuthGuard';
 
 export default function MainLayout() {
+
+    const {dispatch} = useContext(AuthContext)
 
     const DashboardLink = ({to, children, sx}) => {
         return <NavItem to={to} name={children} sx={sx} />
@@ -13,7 +17,8 @@ export default function MainLayout() {
     const navigate = useNavigate();
 
     const handleRedirect = () => {
-        navigate(`${ROOT_DASHBOARD}`);
+        dispatch({type:'LOGOUT'})
+        navigate(PATH_MAIN.welcome);
     }
 
     return (
@@ -30,18 +35,19 @@ export default function MainLayout() {
                             <Box sx={{bgcolor:'white',height:'80%', overflowY:'auto', overflowX:'hidden'}}>
                                 <Stack direction='column' spacing={5}>
                                     <Box /> {/* For Spacing  */}
-                                    <DashboardLink to='dashboard' sx={{bgcolor:'skyblue'}}>Dashboard</DashboardLink>
-                                    <DashboardLink to='profile' sx={{bgcolor:'yellow'}}>Profile</DashboardLink>
+                                    {/* <DashboardLink to='dashboard' sx={{bgcolor:'skyblue'}}>Dashboard</DashboardLink> */}
+                                    <DashboardLink to='datalist' sx={{bgcolor:'red'}}>Data List</DashboardLink>
+                                    {/* <DashboardLink to='profile' sx={{bgcolor:'yellow'}}>Profile</DashboardLink>
                                     <DashboardLink to='drawingport' sx={{bgcolor:'blue'}}>Drawing Portfolio</DashboardLink>
-                                    <DashboardLink to='social' sx={{bgcolor:'magenta'}}>Socials</DashboardLink>
+                                    <DashboardLink to='social' sx={{bgcolor:'magenta'}}>Socials</DashboardLink> */}
                                     {/* <DashboardLink to='randomizer' sx={{bgcolor:'rebeccapurple'}}>Randomizer</DashboardLink> */}
-                                    <DashboardLink to='dbtesting' sx={{bgcolor:'orange'}}>DB Data</DashboardLink>
-                                    <DashboardLink to='randomwithdb' sx={{bgcolor:'pink'}}>Randomizer + DB</DashboardLink>
+                                    {/* <DashboardLink to='dbtesting' sx={{bgcolor:'orange'}}>DB Data</DashboardLink>
+                                    <DashboardLink to='randomizer' sx={{bgcolor:'pink'}}>Randomizer + DB</DashboardLink> */}
                                 </Stack>
                             </Box>
                             <Paper sx={{display:'flex', position:'sticky', bottom:0, height:'10%' , justifyContent:'center', alignItems:'center'}}>
                                 <Button type="button" variant='contained' onClick={handleRedirect} sx={{borderRadius:'.5rem', bgcolor:'red'}}>
-                                    Return to main menu
+                                    Log Out
                                 </Button>
                             </Paper>
                         </Box>
@@ -60,12 +66,13 @@ export default function MainLayout() {
 function NavItem ({to,name, sx}) {
 
     const location = useLocation();
-    const isActive = location.pathname === `${ROOT_DASHBOARD}/mainpage/${to}`;
+    const isActive = location.pathname === `${PATH_MAIN.mainpage}/${to}`;
 
     return (
         <>
             <NavLink 
-                to={`${ROOT_DASHBOARD}/mainpage/${to}`}
+                // to={`${ROOT_DASHBOARD}/mainpage/${to}`}
+                to={`${PATH_MAIN.mainpage}/${to}`}
                 style={{ textDecoration:'none', textAlign:'left', color:'inherit'}}
             >
                 <Box

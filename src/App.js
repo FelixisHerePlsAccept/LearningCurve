@@ -1,20 +1,20 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Router from "./routes/route";
+import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import DarkMode from "./DarkMode";
+import Router from "./routes";
+import { AuthProvider } from "./AuthProvider/AuthGuard";
 
 
 export default function App() {
 
   return (
-    <HelmetProvider>
-      <BrowserRouter>
-        <DarkMode />
-        <Routes>
-          <Route path="" element={<Navigate to="/customlinktree/" replace />} />
-        </Routes>
-        <Router />
-      </BrowserRouter>
-    </HelmetProvider>
+    <AuthProvider>
+      <HelmetProvider>
+        <BrowserRouter>
+          <DarkMode />
+          <Router />
+        </BrowserRouter>
+      </HelmetProvider>
+    </AuthProvider>
   )
 }
