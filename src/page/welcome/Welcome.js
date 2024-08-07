@@ -1,14 +1,14 @@
 import { Box, Button, Card, Stack, Typography } from '@mui/material'
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ROOT_DASHBOARD } from '../../routes/route';
+import { PATH_MAIN } from '../../routes/paths';
 
 export default function Welcome() {
 
     const navigate = useNavigate();
 
     const handleRedirect = () => {
-        navigate(`${ROOT_DASHBOARD}/mainpage/dashboard`);
+        navigate(PATH_MAIN.datalist);
     }
 
     return (

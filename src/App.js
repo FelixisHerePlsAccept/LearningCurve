@@ -1,20 +1,29 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Router from "./routes/route";
+import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import DarkMode from "./DarkMode";
+import Router from "./routes";
+import { AuthProvider } from "./Provider/AuthProvider/AuthGuard";
+import { CustomThemeProvider } from "./Provider/ThemeProvider/ThemeProvider";
+import { MediaProvider } from "./Provider/MediaProvider/MediaProvider";
+import FixedButton from "./page/FixedButton";
+import { DataProvider } from "./Provider/DataProvider/DataProvider";
 
 
 export default function App() {
 
   return (
-    <HelmetProvider>
-      <BrowserRouter>
-        <DarkMode />
-        <Routes>
-          <Route path="" element={<Navigate to="/customlinktree/" replace />} />
-        </Routes>
-        <Router />
-      </BrowserRouter>
-    </HelmetProvider>
+    <AuthProvider>
+      <CustomThemeProvider>
+        <MediaProvider>
+          <DataProvider>
+            <HelmetProvider>
+              <BrowserRouter>
+                <Router />
+                <FixedButton />
+              </BrowserRouter>
+            </HelmetProvider>
+          </DataProvider>
+        </MediaProvider>
+      </CustomThemeProvider>
+    </AuthProvider>
   )
 }
