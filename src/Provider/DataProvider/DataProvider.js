@@ -1,7 +1,7 @@
 import { createContext, useEffect, useMemo, useReducer } from "react";
 import DataReducer from "./DataReducer";
 import { auth, db } from "../../firebase";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 const DataContext = createContext();
