@@ -1,19 +1,28 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as Yup from 'yup'
 import PropType from 'prop-types'
-import React, { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import React, { useContext, useEffect, useMemo } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import FormProvider from '../../../component/hook-form/FormProvider'
-import { RHFTextField } from '../../../component/hook-form'
-import { Box, Grid, Stack, Typography } from '@mui/material'
+import { RHFSelect, RHFTextField } from '../../../component/hook-form'
+import { Box, Divider, Grid, MenuItem, Stack, Typography } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
+import { addDoc, collection, doc, setDoc, updateDoc } from 'firebase/firestore'
+import { db } from '../../../firebase'
+import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
+import moment from 'moment'
 
 EditData.propTypes = {
-    data: PropType.object,
-    onClose: PropType.func
+    editData: PropType.object,
+    onClose: PropType.func,
+    isRequest: PropType.bool,
 }
 
-export default function EditData({ data, onClose }) {
-    console.log(data)
+export default function EditData({ editData, onClose, isRequest=false}) {
+
+    console.log(isRequest)
+
+    const {currentUser} = useContext(AuthContext)
 
     const EditSchema = Yup.object().shape({
         userName: Yup.string().required('Name is required'),
@@ -27,15 +36,15 @@ export default function EditData({ data, onClose }) {
 
     const defaultValue = useMemo(
         () => ({
-            userName: data?.userName || '',
-            userPicUrl: data?.userPicUrl || '',
-            reftype: data?.reftype || '',
-            userTag: data?.userTag || '',
-            websiteUrl: data?.websiteUrl || '',
-            charOrigin: data?.charOrigin || '',
-            remark: data?.remark || '',
+            userName: editData?.userName || '',
+            userPicUrl: editData?.userPicUrl || '',
+            reftype: editData?.reftype || '',
+            userTag: editData?.userTag || '',
+            websiteUrl: editData?.websiteUrl || '',
+            charOrigin: editData?.charOrigin || '',
+            remark: editData?.remark || '',
         }),
-        [data]
+        [editData]
     )
 
     const methods = useForm({
@@ -44,6 +53,7 @@ export default function EditData({ data, onClose }) {
     })
 
     const {
+        control,
         reset,
         handleSubmit,
         formState: { isSubmitting },
@@ -54,7 +64,43 @@ export default function EditData({ data, onClose }) {
     }, [defaultValue, reset])
 
     const onSubmit = async (data) => {
-        console.log(data)
+        if (!isRequest) {
+            try {
+                await updateDoc(doc(db, "MYBOOKMARKS", editData.id), {
+                    userName: data?.userName || "-",
+                    userPicUrl: data?.userPicUrl || "-",
+                    reftype: data?.reftype || "-",
+                    userTag: data?.userTag || "-",
+                    websiteUrl: data?.websiteUrl || "-",
+                    charOrigin: data?.charOrigin || "-",
+                    remark: data?.remark || "-",
+                })
+                onClose()
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        else {
+            try {
+                await setDoc(doc(db, "RequestedChange", editData.id), {
+                    requestedBy: currentUser?.userName || "-",
+                    actionRequested: `Data Change on ${data?.userName} ` || "-",
+                    userName: data?.userName || "-",
+                    userPicUrl: data?.userPicUrl || "-",
+                    reftype: data?.reftype || "-",
+                    userTag: data?.userTag || "-",
+                    websiteUrl: data?.websiteUrl || "-",
+                    charOrigin: data?.charOrigin || "-",
+                    remark: data?.remark || "-",
+                    createdDate: data?.createdDate || "-",
+                    requestedDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
+                })
+                onClose()
+            } catch (error) {
+                console.log(error)
+                alert('Failure in saving data, contact admin');
+            }
+        }
     }
 
     return (
@@ -67,21 +113,73 @@ export default function EditData({ data, onClose }) {
             <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
                 <Grid container>
                     <Grid item xs={12}>
-                        <Stack direcion='column' spacing={2} sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+                        <Stack direcion='column' spacing={1} sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+                            <Typography variant='h4'>
+                                {`Edit Data of ${editData.userName}`}
+                            </Typography>
                             <Typography variant='h5'>
                                 Image Preview
                             </Typography>
-                            {data.userPicUrl !== null &&
+                            {editData.userPicUrl !== null &&
                                 <img 
-                                    src={data?.userPicUrl} 
+                                    src={editData?.userPicUrl} 
                                     alt='Profile Pic' 
                                     style={{
-                                        width:'20rem', 
-                                        height:'20rem', 
+                                        width:'10rem', 
+                                        height:'10rem', 
                                         borderRadius:'50%'
                                     }}
                                 />
                             }
+                        </Stack>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Stack spacing={1}>
+                            <Divider style={{ height:'1rem'}} />
+                            <RHFTextField name="userName" placeholder="Name" />
+                            <RHFTextField name="userPicUrl" placeholder="Profile Pic" minRows={2} multiline />
+                            <Stack direction='row' spacing={2}>
+                                <Controller
+                                    name='reftype'
+                                    control={control}
+                                    defaultValue={null}
+                                    render={({ field }) => (
+                                        <RHFSelect
+                                            {...field}
+                                            placeholder="Reference"
+                                        >
+                                            <MenuItem value={null} />
+                                            <MenuItem value={'Artist'}>Artist</MenuItem>
+                                            <MenuItem value={'Cosplay'}>Cosplay</MenuItem>
+                                            <MenuItem value={'Pose Reference'}>Pose Reference</MenuItem>
+                                            <MenuItem value={'Fashion Reference'}>Fashion Reference</MenuItem>
+                                            <MenuItem value={'Fiction Character'}>Fiction Character</MenuItem>
+                                        </RHFSelect>
+                                    )}
+                                />
+                                <Controller
+                                    name='userTag'
+                                    control={control}
+                                    defaultValue={null}
+                                    render={({ field }) => (
+                                        <RHFSelect
+                                            {...field}
+                                            placeholder="Tag"
+                                        >
+                                            <MenuItem value={null} />
+                                            <MenuItem value={'SFW'}>SFW</MenuItem>
+                                            <MenuItem value={'Borderline'}>Borderline</MenuItem>
+                                            <MenuItem value={'NSFW'}>NSFW</MenuItem>
+                                        </RHFSelect>
+                                    )}
+                                />
+                            </Stack>
+                            <RHFTextField name="websiteUrl" placeholder="Website URL" />
+                            <RHFTextField name="charOrigin" placeholder="Character Origin" />
+                            <RHFTextField name="remark" placeholder="Remark" />
+                            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+                                Edit Data
+                            </LoadingButton>
                         </Stack>
                     </Grid>
                 </Grid>

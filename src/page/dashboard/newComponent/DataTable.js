@@ -1,18 +1,16 @@
-import { collection, getDocs } from 'firebase/firestore'
-import PropType from 'prop-types'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { addDoc, collection, deleteDoc, doc, setDoc} from 'firebase/firestore'
+import React, { useCallback, useContext, useRef, useState } from 'react'
 import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography } from '@mui/material'
 import moment from 'moment'
-import { DotsVerticalIcon, DownloadIcon, PencilAltIcon, SearchCircleIcon, TrashIcon } from '@heroicons/react/outline'
 import { saveAs } from 'file-saver'
 import { db } from '../../../firebase'
 import { emptyRows, TableEmptyRows, TablePaginationCustom, useTable } from '../../../component/table'
 import TableNoData from '../../../component/table/TableNoData'
 import EditData from './EditData'
-
-DataTable.propTypes = {
-    refresh: PropType.bool,
-}
+import NewEntry from './NewEntry'
+import { DocumentArrowDownIcon, EllipsisVerticalIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid'
+import DataContext from '../../../Provider/DataProvider/DataProvider'
+import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
 
 const REF_TYPE =[
     {
@@ -32,26 +30,23 @@ const REF_TYPE =[
     },
 ]
 
-export default function DataTable({ refresh }) {
+export default function DataTable() {
 
-    const [dataArr, setDataArr] = useState([])
+    const { dataRetrieved, maxQuota } = useContext(DataContext)
+    const { currentUser } = useContext(AuthContext)
 
-    const fetchData = async () => {
-        try {
-          const querySnapshot = await getDocs(collection(db, "MYBOOKMARKS"));
-          const documents = querySnapshot.docs.map((doc) => ({
-            userId: doc.id,
-            ...doc.data(),
-          }))
-          setDataArr(documents);
-        } catch (error) {
-          console.error("Error fetching documents:", error);
-        }
-    };
-    
-    useEffect(() => {
-        fetchData();
-    }, [refresh]);
+    const [dataArr] = useState( dataRetrieved || [])
+    const [openCreate, setOpenCreate] = useState(false)
+    const [filterStatus, setFilterStatus] = useState('all')
+    const [filterName, setFilterName] = useState('')
+    const [onSort, setOnSort] = useState('')
+    const tableContainerRef = useRef(null)
+    const [tag, setTag] = useState('SFW')
+    const [openPopover, setOpenPopover] = useState(null)
+    const [selected, setSelected] = useState([]) // change to object
+    const [openWarning, setOpenWarning] = useState(false)
+    const [openModify, setOpenModify] = useState(false)
+    const [reason, setReason] = useState('')
 
     const {
         page,
@@ -60,19 +55,13 @@ export default function DataTable({ refresh }) {
         onChangeRowsPerPage,
     } = useTable()
 
-    const [filterStatus, setFilterStatus] = useState('all')
-    const [filterName, setFilterName] = useState('')
-    const [onSort, setOnSort] = useState('')
-    const tableContainerRef = useRef(null)
-    const [tag, setTag] = useState('SFW')
-    const [openPopover, setOpenPopover] = useState(null)
-    const [selected, setSelected] = useState([])
-    const [openWarning, setOpenWarning] = useState(false)
-    const [openModify, setOpenModify] = useState(false)
+    const dataArrFiltered = dataArr?.filter((data) => data.docId !== 'null')
 
-    const dataWithNum = dataArr?.map((data, index) => ({
+    const dataWithNum = dataArrFiltered
+    ?.sort((a,b) => a.createdDate.localeCompare(b.createdDate))
+    .map((data, index) => ({
         num: index + 1,
-        id: data.userId,
+        id: data.docId,
         date: moment(data.createdDate).format('DD/MM/YYYY'),
         time: moment(data.createdDate).format('hh:mm A'),
         ...data,
@@ -130,8 +119,28 @@ export default function DataTable({ refresh }) {
         console.log('handleEdit', data)
     }
 
-    const handleDelete = (id) => {
-        console.log('handleDelete', id)
+    const handleDelete = async (data) => {
+        console.log(currentUser.userRole)
+        if (currentUser.userRole !== 'Admin') {
+            await setDoc(doc(db, "RequestedDelete", data?.id), {
+                requestedBy: currentUser?.userName || "-",
+                actionRequested: `Delete ${data?.userName} ` || "-",
+                userName: data?.userName || "-",
+                userPicUrl: data?.userPicUrl || "-",
+                websiteUrl: data?.websiteUrl || "-",
+                charOrigin: data?.charOrigin || "-",
+                remark: data?.remark || "-",
+                createdDate: data?.createdDate || "-",
+                reftype: data?.reftype || "-",
+                userTag: data?.userTag || "-",
+                reasonForDeletion: reason || "No reason provided",   
+            })
+            setReason('')
+        } else {
+            const docRef = doc(db, "MYBOOKMARKS", data.id);
+            await deleteDoc(docRef)
+            console.log(`Document ${data.id} has been deleted`)
+        }
     }
 
     const handleOpenPopover = (event) => {
@@ -147,12 +156,18 @@ export default function DataTable({ refresh }) {
         setOpenWarning(true)
     }
 
+    console.log(typeof selected)
+
     const handleCloseWarning = () => {
         setOpenWarning(false)
     }
 
     const handleCloseModify = () => {
         setOpenModify(false)
+    }
+
+    const handleImgError = (name) => {
+        alert(`Image not found ${name}`)
     }
 
     const handleTooLong = (remark) => {
@@ -163,6 +178,7 @@ export default function DataTable({ refresh }) {
                 <Typography
                     variant='caption'
                     sx={{
+                        textTransform:'capitalize', 
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -176,8 +192,23 @@ export default function DataTable({ refresh }) {
         );
     }
 
+    const onSubmitClose = () => {
+        setOpenCreate(false)
+    }
+
     const isNotFound = (!dataFiltered.length && !!filterName) || (!dataFiltered.length && !!tag)
 
+    if(maxQuota) {
+        return (
+            <>
+                <Container maxWidth='md'>
+                    <Typography variant='h6' sx={{textAlign:'center', p:'1rem'}}>
+                        Quota Exceeded, Sorry
+                    </Typography>
+                </Container>
+            </>
+        )
+    }
     return (
         <Container maxWidth='md'>
             <Dialog
@@ -185,7 +216,26 @@ export default function DataTable({ refresh }) {
                 onClose={handleCloseModify}
             >
                 <DialogContent>
-                    <EditData data={selected} onClose={handleCloseModify} />
+                    {currentUser && currentUser.userRole !== "Admin" 
+                    ? 
+                        <EditData editData={selected} onClose={handleCloseModify} isRequest={true}  />
+                    : 
+                        <EditData editData={selected} onClose={handleCloseModify} />
+                    }
+                    
+                </DialogContent>
+            </Dialog>
+            <Dialog
+                open={openCreate}
+                onClose={onSubmitClose}
+            >
+                <DialogContent>
+                    {currentUser && currentUser.userRole !== "Admin" ?
+                        <NewEntry onClose={onSubmitClose} prevData={dataArr} isRequest={true} />
+                    :
+                        <NewEntry onClose={onSubmitClose} prevData={dataArr} />
+                    }
+                    
                 </DialogContent>
             </Dialog>
             <Dialog
@@ -193,28 +243,73 @@ export default function DataTable({ refresh }) {
                 onClose={handleCloseWarning}
             >
                 <DialogContent>
-                    <DialogContentText sx={{width:'20rem', height:'5rem'}}>
-                        Delete data of {`${selected.userName}`} ?
+                    <DialogContentText>
+                        {currentUser && currentUser.userRole !== "Admin" ? 
+                            <Typography>
+                                Inform Admin of Your Choice to Delete {`${selected.userName}`} ?
+                            </Typography>
+                        :
+                            <Typography>
+                                Delete data of {`${selected.userName}`} ?
+                            </Typography>
+                        }
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Stack direction='row' spacing={5}>
-                        <Button 
-                            variant='contained' 
-                            sx={{bgcolor:'red'}} 
-                            onClick={()=>{
-                                handleDelete(selected.userId);
-                                handleCloseWarning();
-                            }}
-                        >
-                            Confirm
-                        </Button>
-                        <Button onClick={handleCloseWarning}>
-                            Cancel
-                        </Button>
-                    </Stack>
+                    <Grid container spacing={2}>
+                        {currentUser && currentUser.userRole !== "Admin" 
+                        ?
+                        <Grid item xs={12} sx={{ml:'1rem'}}>
+                            <Typography>
+                                Provide Your Reasoning:
+                            </Typography>
+                            <TextField
+                                sx={{
+                                    width:'95%'
+                                }}
+                                multiline
+                                minRows={2}
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                            />
+                        </Grid>
+                        :
+                        null
+                        }
+                        <Grid item xs={12} sx={{display:'flex', justifyContent:'flex-end'}}>
+                            <Stack direction='row' sx={{alignItems:'flex-end'}} spacing={2}>
+                                <Button 
+                                    variant='contained' 
+                                    sx={{
+                                        bgcolor:'red',
+                                    }} 
+                                    onClick={()=>{
+                                        handleDelete(selected);
+                                        handleCloseWarning();
+                                    }}
+                                >
+                                    Confirm
+                                </Button>
+                                <Button onClick={handleCloseWarning}>
+                                    Cancel
+                                </Button>
+                            </Stack>    
+                        </Grid>
+                    </Grid>
                 </DialogActions>
             </Dialog>
+            <Box sx={{width:'100%', pb:".5rem"}}>
+                <Box sx={{display:'flex', justifyContent:'flex-end'}}>
+                    <Button variant='contained' onClick={() => setOpenCreate(true)} sx={{bgcolor:'lightgreen'}}>
+                        <Stack direction='row' spacing={1} sx={{alignItems:'center'}}>
+                            <Typography>
+                                Add New Entry
+                            </Typography>
+                            <PlusIcon style={{width:'1rem', height:'1rem'}} />
+                        </Stack>
+                    </Button>
+                </Box>
+            </Box>
             <Tabs
                 value={filterStatus}
                 onChange={handleFilterStatus}
@@ -237,7 +332,7 @@ export default function DataTable({ refresh }) {
             <Stack
                 direction='row'
                 sx={{
-                    p:'1rem'
+                    p:'.5rem'
                 }}
                 spacing={2}
             >
@@ -277,14 +372,14 @@ export default function DataTable({ refresh }) {
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position='start'>
-                                <SearchCircleIcon />
+                                <MagnifyingGlassCircleIcon />
                             </InputAdornment>
                         ),
                     }}
                 />
                 <Tooltip title="Save Data As Json">
                     <Button onClick={saveJsonToFile} variant='outlined' sx={{border:'1px solid rgb(200,200,200)'}}>
-                        <DownloadIcon style={{width:'20px',height:'20px', }} />
+                        <DocumentArrowDownIcon style={{width:'20px',height:'20px', }} />
                     </Button>
                 </Tooltip>
                 {filterName || onSort || tag !== 'all' || filterStatus !== 'all' ? 
@@ -339,6 +434,7 @@ export default function DataTable({ refresh }) {
                                                     height:'60px', 
                                                     borderRadius:'50%'
                                                 }}
+                                                onError={()=>handleImgError(data.userName)}
                                             />
                                         </Grid>
                                         <Grid item xs={12} md={6} align='left'>
@@ -397,7 +493,7 @@ export default function DataTable({ refresh }) {
                                             handleOpenPopover(event)
                                         }}
                                     >
-                                        <DotsVerticalIcon style={{height:'20px', width:'20px'}} />
+                                        <EllipsisVerticalIcon style={{height:'20px', width:'20px'}} />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
@@ -432,15 +528,13 @@ export default function DataTable({ refresh }) {
                         handleClosePopover();
                     }}
                 >
-                    <PencilAltIcon style={{width:'20px', height:'20px', color: 'blue'}} />
+                    <PencilIcon style={{width:'20px', height:'20px', color: 'blue'}} />
                     Modify
                 </MenuItem>
                 <MenuItem
                     onClick={()=>{
-                        // handleDelete(passingData.data_rowid);
                         handleOpenWarning(selected)
                         handleClosePopover();
-                        // setSubmit(true);
                     }}
                 >
                     <TrashIcon style={{width:'20px', height:'20px', color:'red'}} />

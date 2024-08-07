@@ -1,14 +1,22 @@
-import { Box, Button, Container, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Divider, Grid, Paper, Stack, Typography } from '@mui/material';
 import React, { useContext } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ROOT_DASHBOARD } from '../../routes';
-import { ChevronDoubleRightIcon } from '@heroicons/react/outline';
 import { PATH_MAIN } from '../../routes/paths';
-import AuthContext from '../../AuthProvider/AuthGuard';
+import AuthContext from '../../Provider/AuthProvider/AuthGuard';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase';
+import { ChevronDoubleRightIcon } from '@heroicons/react/24/solid';
+import DataContext from '../../Provider/DataProvider/DataProvider';
 
 export default function MainLayout() {
 
-    const {dispatch} = useContext(AuthContext)
+    const { currentUser, dispatch } = useContext(AuthContext)
+    const { notifyAdd, notifyRemove, notifyUpdate } = useContext(DataContext)
+
+    const FilteredAdd = notifyAdd?.filter(data => data.docId !== 'null')
+    const FilteredRemove = notifyRemove?.filter(data => data.docId !== 'null')
+    const FilteredUpdate = notifyUpdate?.filter(data => data.docId !== 'null')
+    const TOTAL_NOTIFICATION = FilteredAdd?.length + FilteredRemove?.length + FilteredUpdate?.length || 0
 
     const DashboardLink = ({to, children, sx}) => {
         return <NavItem to={to} name={children} sx={sx} />
@@ -17,7 +25,12 @@ export default function MainLayout() {
     const navigate = useNavigate();
 
     const handleRedirect = () => {
-        dispatch({type:'LOGOUT'})
+        try {
+            signOut(auth)
+            dispatch({type:'LOGOUT'})
+        } catch(err) {
+            console.error(err)
+        }
         navigate(PATH_MAIN.welcome);
     }
 
@@ -27,22 +40,46 @@ export default function MainLayout() {
                 <Grid container>
                     <Grid item xs={12} md={2}>
                         <Box sx={{position:'sticky', top:0, height:'100vh', borderRight:'1px solid gray'}}>
-                            <Box sx={{display:'flex', justifyContent:'center', alignItems:'center', position:'sticky', top:0, bgcolor:'yellow', height:'10%'}}>
-                                <Typography sx={{cursor:'default'}}>
-                                    USER: <br/> <strong>Felix Othneal Anak Frank</strong>
-                                </Typography>
+                            <Box sx={{display:'flex', justifyContent:'left', alignItems:'center', pl:'1rem', position:'sticky', top:0, bgcolor:'yellow', height:'10%'}}>
+                                <Stack spacing={1}>
+                                    <Typography variant='h5' sx={{cursor:'default'}}>
+                                        USER: <strong>{currentUser.userName}</strong>
+                                    </Typography>
+                                    <Divider sx={{width:'100%', color:'gray'}} />
+                                    <Typography variant='body1' sx={{cursor:'default'}}>
+                                        Role: {currentUser?.userRole}
+                                    </Typography>
+                                </Stack>
                             </Box>
                             <Box sx={{bgcolor:'white',height:'80%', overflowY:'auto', overflowX:'hidden'}}>
                                 <Stack direction='column' spacing={5}>
-                                    <Box /> {/* For Spacing  */}
-                                    {/* <DashboardLink to='dashboard' sx={{bgcolor:'skyblue'}}>Dashboard</DashboardLink> */}
+                                    <Box /> 
                                     <DashboardLink to='datalist' sx={{bgcolor:'red'}}>Data List</DashboardLink>
-                                    {/* <DashboardLink to='profile' sx={{bgcolor:'yellow'}}>Profile</DashboardLink>
-                                    <DashboardLink to='drawingport' sx={{bgcolor:'blue'}}>Drawing Portfolio</DashboardLink>
-                                    <DashboardLink to='social' sx={{bgcolor:'magenta'}}>Socials</DashboardLink> */}
-                                    {/* <DashboardLink to='randomizer' sx={{bgcolor:'rebeccapurple'}}>Randomizer</DashboardLink> */}
-                                    {/* <DashboardLink to='dbtesting' sx={{bgcolor:'orange'}}>DB Data</DashboardLink>
-                                    <DashboardLink to='randomizer' sx={{bgcolor:'pink'}}>Randomizer + DB</DashboardLink> */}
+                                    <DashboardLink to='testing' sx={{bgcolor:'red'}}>Testing</DashboardLink>
+                                    <DashboardLink to='testing2' sx={{bgcolor:'red'}}>Testing2</DashboardLink>
+                                    <DashboardLink to='notification' sx={{bgcolor:'yellow'}}>
+                                        <Stack direction='row' spacing={1} alignItems={'center'}>
+                                            <Typography variant='inherit'>
+                                                Notification
+                                            </Typography>
+                                            { currentUser?.userRole === 'Admin' && TOTAL_NOTIFICATION > 0 && (
+                                                <Box sx={{
+                                                    borderRadius:'50%',
+                                                    bgcolor:'red',
+                                                    width:"1.5rem",
+                                                    height:"1.5rem",
+                                                    display:'flex',
+                                                    justifyContent:'center',
+                                                    alignItems:'center',
+                                                }}>
+                                                    <Typography variant='inherit' sx={{color:'white'}}>
+                                                        {TOTAL_NOTIFICATION}
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                            {/* Below here, include a counter for the number of notifications */}
+                                        </Stack>
+                                    </DashboardLink>
                                 </Stack>
                             </Box>
                             <Paper sx={{display:'flex', position:'sticky', bottom:0, height:'10%' , justifyContent:'center', alignItems:'center'}}>
@@ -79,19 +116,19 @@ function NavItem ({to,name, sx}) {
                     sx={{
                         borderRadius: '1rem',
                         p:'1rem 1rem 1rem 1rem',
-                        width: isActive ? '120%' : '80%',
-                        ...sx,
+                        // width: isActive ? '100%' : '80%',
+                        bgcolor: isActive ? 'gray' : 'inherit',
                     }}
                 >
                     <Grid container>
-                        <Grid item xs={12} md={6}>
-                            <Typography noWrap={true} variant='inherit' sx={{fontWeight: isActive ? 700 : 500, height:20}}>
+                        <Grid item xs={12} md={6} >
+                            <Typography noWrap={true} variant='inherit' sx={{fontWeight: isActive ? 700 : 500, color: isActive ? 'white' : 'inherit'}}>
                                 {name}
                             </Typography>
                         </Grid>
                         {isActive ? 
                         <Grid item xs={12} md={6} align='right' sx={{display:'flex'}}>
-                            <ChevronDoubleRightIcon style={{ position:'relative', margin:'auto', width: 20 }} />
+                            <ChevronDoubleRightIcon style={{ position:'relative', margin:'auto', width: 20}} />
                         </Grid>
                         :
                         (

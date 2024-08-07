@@ -1,40 +1,26 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import * as Yup from 'yup'
-import { addDoc, collection, getDocs } from 'firebase/firestore'
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore'
 import { Controller, useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import FormProvider from '../../../component/hook-form/FormProvider'
 import { RHFSelect, RHFTextField } from '../../../component/hook-form'
-import { Button, Grid, MenuItem, Stack, Typography } from '@mui/material'
+import { Box, Button, Grid, MenuItem, Stack, Typography } from '@mui/material'
 import { LoadingButton } from '@mui/lab'
 import { db } from '../../../firebase'
 import moment from 'moment/moment'
+import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
 
 NewEntry.propTypes = {
-    setRefresh: PropTypes.func,
-    onSubmitClose: PropTypes.func,
-    refresh: PropTypes.bool
+    onClose: PropTypes.func,
+    prevData: PropTypes.array,
+    isRequest: PropTypes.bool,
 }
 
-export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
+export default function NewEntry({ onClose, prevData, isRequest=false }) {    
 
-    const [dataArr, setDataArr] = useState([])
-
-    const fetchData = async () => {
-        try {
-          const querySnapshot = await getDocs(collection(db, "MYBOOKMARKS"));
-          const documents = querySnapshot.docs.map(doc => doc.data().userName);
-          setDataArr(documents);
-        } catch (error) {
-          console.error("Error fetching documents:", error);
-        }
-    };
-    
-    useEffect(() => {
-        fetchData();
-    }, [refresh]);
-    
+    const {currentUser} = useContext(AuthContext)
 
     const NewSchema = Yup.object().shape({
         userName: Yup.string().required('Name is required'),
@@ -65,6 +51,7 @@ export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
     })
 
     const {
+        setValue,
         reset,
         watch,
         control,
@@ -74,7 +61,6 @@ export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
 
     const watchImage = watch('userPicUrl')
     const watchName = watch('userName')
-    const watchTag = watch('userTag')
 
     const handleOpenWindow = (event) => {
         const targetElement = event.currentTarget;
@@ -97,121 +83,108 @@ export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
     }
     
     const onSubmit = async (data) => {
-        const noSimilar = dataArr.find((same) => same === data.userName);
+        const noSimilar = prevData?.find((same) => same.userName === data.userName);
         if (noSimilar) {
             alert('Name already exists!')
             reset(defaultValue);
             return;
         }
-        try {
-            await addDoc(collection(db,'MYBOOKMARKS'), {
-                userName: data?.userName || "-",
-                userPicUrl: data?.userPicUrl || "-",
-                reftype: data?.reftype || "-",
-                userTag: data?.userTag || "-",
-                websiteUrl: data?.websiteUrl || "-",
-                charOrigin: data?.charOrigin || "-",
-                remark: data?.remark || "-",
-                createdDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
-            })
-            setRefresh((prev) => !prev)
-            onSubmitClose()
-            reset(defaultValue)
-        } catch (error) {
-            console.log(error)
+        if (!isRequest) {
+            console.log('false isRequest')
+            try {
+                await addDoc(collection(db,'MYBOOKMARKS'), {
+                    userName: data?.userName || "-",
+                    userPicUrl: data?.userPicUrl || "-",
+                    reftype: data?.reftype || "-",
+                    userTag: data?.userTag || "-",
+                    websiteUrl: data?.websiteUrl || "-",
+                    charOrigin: data?.charOrigin || "-",
+                    remark: data?.remark || "-",
+                    createdDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
+                })
+                onClose()
+                reset(defaultValue)
+            } catch (error) {
+                console.log(error)
+            }
+        } else {
+            console.log('true isRequest')
+            try {
+                const retrieveID = await addDoc(collection(db, "RequestCreate"), {
+                    requestedBy: currentUser?.userName || "-",
+                    userName: data?.userName || "-",
+                    userPicUrl: data?.userPicUrl || "-",
+                    reftype: data?.reftype || "-",
+                    userTag: data?.userTag || "-",
+                    websiteUrl: data?.websiteUrl || "-",
+                    charOrigin: data?.charOrigin || "-",
+                    remark: data?.remark || "-",
+                    createdDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
+                })
+                await setDoc(doc(db, "RequestCreate", retrieveID.id), {
+                    docId: retrieveID.id
+                },{ merge: true })
+                onClose()
+                reset(defaultValue)
+            } catch (error) {
+                console.log(error)
+                alert('Failure in saving data, contact admin');
+            }
         }
     }
 
+    if (watchName) {
+        setValue('websiteUrl', `https://x.com/${watchName}/media`)
+    }
+
     return (
-        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-            <Grid
-                container
-                spacing={2}
-                sx={{
-                    p:'0 5rem 1rem 5rem',
-                }}
-            >
-                <Grid 
-                    item 
-                    xs={12} md={4} 
-                    sx={{
-                        width:'20rem',
-                        display:'flex',
-                        justifyContent:'left',
-                        alignItems:'center',
-                        height:'25rem'
-                    }}
-                >
-                    <Stack 
-                        direction='column' 
-                        spacing={2}
-                        sx={{
-                            display:'flex',
-                            justifyContent:'left',
-                            alignItems:'center'
-                        }}
-                    >
-                        <Typography variant='h5'>
-                            Image Preview
-                        </Typography>
-                        <img 
-                            src={watchImage} 
-                            alt='' 
-                            style={{
-                                width:'15rem', 
-                                height:'15rem', 
-                                borderRadius:'50%',
-                                border:'1px solid black'
-                            }}
-                        />
-                    </Stack>
-                </Grid>
-                <Grid item xs={12} md={1} />
-                <Grid 
-                    item 
-                    xs={12} md={7} 
-                    sx={{
-                        width:'30rem'
-                    }}
-                >
-                    <Stack 
-                        direction='column' 
-                        spacing={2} 
-                        sx={{ 
-                            display:'flex', 
-                            justifyContent:'center', 
-                            alignItems:'center'
-                        }}
-                    >
-                        <RHFTextField name="userName" label="Name" />
-                        <Grid container>
-                            <Grid item xs={12} md={!watchName ? 12 : 7}>
-                                <RHFTextField 
-                                    name="userPicUrl" 
-                                    label="Profile Picture URL" 
-                                    minRows={2}
-                                    multiline
-                                />
-                            </Grid>
-                            {watchName && (
-                                <>
-                                <Grid item xs={12} md={1} />
-                                <Grid item xs={12} md={4}>
-                                    <Button variant='contained' sx={{height:'100%'}} onClick={handleOpenWindow}>
-                                        Show Photo (Twitter)?
-                                    </Button>
-                                </Grid>
-                                </>
-                            )}
-                        </Grid>
-                        
+        <Box 
+            sx={{
+                width:'30vw',
+                height:'80vh',
+                // p:'0 5rem 1rem 5rem',
+            }}
+        >
+            <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={5} sx={{p:'1rem'}}>
                         <Stack 
-                            direction='row' 
-                            spacing={2} 
+                            direction='column' 
+                            spacing={2}
                             sx={{
-                                width:'100%'
+                                display:'flex',
+                                justifyContent:'left',
+                                alignItems:'center',
                             }}
                         >
+                            <Typography variant='h5' sx={{textAlign:'center'}}>
+                                Image Preview
+                            </Typography>
+                            <img 
+                                src={watchImage} 
+                                alt='' 
+                                style={{
+                                    width:'10rem', 
+                                    height:'10rem', 
+                                    borderRadius:'50%',
+                                    border:'1px solid black'
+                                }}
+                            />
+                        </Stack>
+                    </Grid>
+                    <Grid item xs={12} md={7} sx={{p:'1rem'}}>
+                        <Stack direction='column' spacing={1}>
+                            <RHFTextField name='userName' showLabel={true} />
+                            <RHFTextField name='userPicUrl' showLabel={true} minRows={2} multiline /> 
+                            {watchName && (
+                                <Button variant='contained' onClick={handleOpenWindow} fullWidth color='secondary'>
+                                    Open User Profile
+                                </Button>
+                            )}
+                        </Stack>
+                    </Grid>
+                    <Grid item xs={12} sx={{p:'0 1rem 0 1rem'}}>
+                        <Stack direction='row' spacing={2}>
                             <Controller
                                 name='reftype'
                                 control={control}
@@ -222,7 +195,7 @@ export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
                                         label="Reference Type"
                                         placeholder="Reference"
                                     >
-                                        <MenuItem value={null} />
+                                        <MenuItem value={null} disabled />
                                         <MenuItem value={'Artist'}>Artist</MenuItem>
                                         <MenuItem value={'Cosplay'}>Cosplay</MenuItem>
                                         <MenuItem value={'Pose Reference'}>Pose Reference</MenuItem>
@@ -241,7 +214,7 @@ export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
                                         label="Tag"
                                         placeholder="Tag"
                                     >
-                                        <MenuItem value={null} />
+                                        <MenuItem value={null} disabled />
                                         <MenuItem value={'SFW'}>SFW</MenuItem>
                                         <MenuItem value={'Borderline'}>Borderline</MenuItem>
                                         <MenuItem value={'NSFW'}>NSFW</MenuItem>
@@ -249,19 +222,22 @@ export default function NewEntry({ refresh, setRefresh, onSubmitClose }) {
                                 )}
                             />
                         </Stack>
-                        <Stack direction='row' sx={{width:'100%'}} spacing={1}>
-                            <Typography variant='caption' sx={{alignSelf: 'center'}}>Provide Remark for This Artist</Typography>
-                            <Typography variant='h6' sx={{alignSelf: 'center'}}>:</Typography>
-                            <RHFTextField name='remark' label="Remark" />
+                    </Grid>
+                    <Grid item xs={12} sx={{p:'0 1rem 0 1rem'}}>
+                        <Stack spacing={2}>
+                            <Stack direction='column' spacing={1}>
+                                <Typography variant='caption'>Provide Remark for This Artist :</Typography>
+                                <RHFTextField name='remark' label="Remark" sx={{textTransform: 'capitalize'}} />
+                            </Stack>
+                            <RHFTextField name="websiteUrl" label={!watchName? "Website URL" : null} />
+                            <RHFTextField name="charOrigin" label="Origin" />
+                            <LoadingButton fullWidth type="submit" variant="contained" loading={isSubmitting}>
+                                Create new list
+                            </LoadingButton>
                         </Stack>
-                        <RHFTextField name="websiteUrl" label="Website URL" />
-                        <RHFTextField name="charOrigin" label="Origin" />
-                        <LoadingButton fullWidth type="submit" variant="contained" loading={isSubmitting}>
-                            Create new list
-                        </LoadingButton>
-                    </Stack>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </FormProvider>
+            </FormProvider>
+        </Box>
     )
 }

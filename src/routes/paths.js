@@ -9,4 +9,5 @@ export const PATH_MAIN = {
     welcome: '/welcome',
     mainpage: ROOT_MAIN,
     datalist: path(ROOT_MAIN, '/datalist'),
+    notification: path(ROOT_MAIN, '/notification'),
 }

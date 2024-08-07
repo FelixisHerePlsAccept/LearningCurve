@@ -1,15 +1,3 @@
-:root {
-    --bg_color: white;
-    --font_color: black; 
-    --link_color: navy;
-}
-
-[data-theme = "dark"] {
-    --bg_color: #282c34;
-    --font_color: white;
-    --link_color: cyan;
-}
-
 html, body, #root {
     margin:0;
     padding:0;
