@@ -20,7 +20,7 @@ EditData.propTypes = {
 
 export default function EditData({ editData, onClose, isRequest=false}) {
 
-    console.log(isRequest)
+    console.log(editData)
 
     const {currentUser} = useContext(AuthContext)
 
@@ -92,7 +92,7 @@ export default function EditData({ editData, onClose, isRequest=false}) {
                     websiteUrl: data?.websiteUrl || "-",
                     charOrigin: data?.charOrigin || "-",
                     remark: data?.remark || "-",
-                    createdDate: data?.createdDate || "-",
+                    createdDate: moment(editData?.createdDate).format('YYYY-MM-DD hh:mm:ss A') || "-",
                     requestedDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
                 })
                 onClose()

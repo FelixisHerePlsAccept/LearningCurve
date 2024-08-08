@@ -8,7 +8,7 @@ import { emptyRows, TableEmptyRows, TablePaginationCustom, useTable } from '../.
 import TableNoData from '../../../component/table/TableNoData'
 import EditData from './EditData'
 import NewEntry from './NewEntry'
-import { DocumentArrowDownIcon, EllipsisVerticalIcon, GlobeAltIcon, LinkIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid'
+import { DocumentArrowDownIcon, EllipsisVerticalIcon, GlobeAltIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid'
 import DataContext from '../../../Provider/DataProvider/DataProvider'
 import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
 import twitterBird from '../mock/twitter-bird.png'
@@ -453,14 +453,9 @@ export default function DataTable() {
                                         </Grid>
                                         <Grid item xs={12} md={6} align='left'>
                                             <Stack direction ='column'>
-                                                <Stack direction='row'>
-                                                    <Typography variant='subtitle1'>
-                                                        {data.userName}
-                                                    </Typography>
-                                                    <IconButton size='small' onClick={() => handleRedirect(data.userName)}>
-                                                        <LinkIcon style={{width:'20px', height:'20px'}} />
-                                                    </IconButton>
-                                                </Stack>
+                                                <Typography variant='subtitle1'>
+                                                    {data.userName}
+                                                </Typography>
                                                 <div>
                                                     {handleTooLong(data.remark)}
                                                 </div>

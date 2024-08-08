@@ -83,7 +83,7 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 websiteUrl: dataPassed?.websiteUrl || "-",
                 charOrigin: dataPassed?.charOrigin || "-",
                 remark: dataPassed?.remark || "-",
-                createdDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
+                createdDate: moment(dataPassed?.createdDate).format('YYYY-MM-DD hh:mm:ss A'),
             })
             await deleteDoc(doc(db, "RequestCreate", dataPassed?.docId))
             setIsLoading(false)
@@ -104,7 +104,7 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 websiteUrl: dataPassed?.websiteUrl || "-",
                 charOrigin: dataPassed?.charOrigin || "-",
                 remark: dataPassed?.remark || "-",
-                createdDate: dataPassed?.createdDate || "-"
+                createdDate: dataUpdate?.createdDate || "-"
             })
             await deleteDoc(doc(db, "RequestedChange", dataPassed?.docId))
             setIsLoading(false)
