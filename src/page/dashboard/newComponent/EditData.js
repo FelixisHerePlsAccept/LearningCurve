@@ -114,10 +114,10 @@ export default function EditData({ editData, onClose, isRequest=false}) {
                 <Grid container>
                     <Grid item xs={12}>
                         <Stack direcion='column' spacing={1} sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>
-                            <Typography variant='h4'>
+                            <Typography variant='h6'>
                                 {`Edit Data of ${editData.userName}`}
                             </Typography>
-                            <Typography variant='h5'>
+                            <Typography variant='body1'>
                                 Image Preview
                             </Typography>
                             {editData.userPicUrl !== null &&
@@ -174,9 +174,9 @@ export default function EditData({ editData, onClose, isRequest=false}) {
                                     )}
                                 />
                             </Stack>
-                            <RHFTextField name="websiteUrl" placeholder="Website URL" />
-                            <RHFTextField name="charOrigin" placeholder="Character Origin" />
-                            <RHFTextField name="remark" placeholder="Remark" />
+                            <RHFTextField name="websiteUrl" placeholder="Website URL" showLabel={true}/>
+                            <RHFTextField name="charOrigin" placeholder="Character Origin" showLabel/>
+                            <RHFTextField name="remark" placeholder="Remark" showLabel />
                             <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
                                 Edit Data
                             </LoadingButton>

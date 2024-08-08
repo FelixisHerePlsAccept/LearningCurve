@@ -1,6 +1,6 @@
 import { deleteDoc, doc, setDoc} from 'firebase/firestore'
 import React, { useCallback, useContext, useRef, useState } from 'react'
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography } from '@mui/material'
+import { Alert, Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography } from '@mui/material'
 import moment from 'moment'
 import { saveAs } from 'file-saver'
 import { db } from '../../../firebase'
@@ -8,9 +8,10 @@ import { emptyRows, TableEmptyRows, TablePaginationCustom, useTable } from '../.
 import TableNoData from '../../../component/table/TableNoData'
 import EditData from './EditData'
 import NewEntry from './NewEntry'
-import { DocumentArrowDownIcon, EllipsisVerticalIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid'
+import { DocumentArrowDownIcon, EllipsisVerticalIcon, GlobeAltIcon, LinkIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/solid'
 import DataContext from '../../../Provider/DataProvider/DataProvider'
 import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
+import twitterBird from '../mock/twitter-bird.png'
 
 const REF_TYPE =[
     {
@@ -166,8 +167,20 @@ export default function DataTable() {
         setOpenModify(false)
     }
 
-    const handleImgError = (name) => {
-        alert(`Image not found ${name}`)
+    const handleImgError = (name) => (
+        <Alert severity="warning">
+            <Typography variant="body1">
+                Image not found {name}
+            </Typography>
+        </Alert>
+    )
+
+    const handleRedirect = (name) => {
+        window.open(`https://x.com/${name}/media`, '_blank');
+    }
+    
+    const handleRedirectWebsite = (name) => {
+        window.open(name, '_blank');
     }
 
     const handleTooLong = (remark) => {
@@ -411,6 +424,7 @@ export default function DataTable() {
                         <TableRow>
                             <TableCell>Num</TableCell>
                             <TableCell align='center'>Username</TableCell>
+                            <TableCell align='center'>Website Redirect</TableCell>
                             <TableCell align='center'>Tag</TableCell>
                             <TableCell align='center'>Origin</TableCell>
                             <TableCell />
@@ -439,15 +453,37 @@ export default function DataTable() {
                                         </Grid>
                                         <Grid item xs={12} md={6} align='left'>
                                             <Stack direction ='column'>
-                                                <Typography variant='subtitle1'>
-                                                    {data.userName}
-                                                </Typography>
+                                                <Stack direction='row'>
+                                                    <Typography variant='subtitle1'>
+                                                        {data.userName}
+                                                    </Typography>
+                                                    <IconButton size='small' onClick={() => handleRedirect(data.userName)}>
+                                                        <LinkIcon style={{width:'20px', height:'20px'}} />
+                                                    </IconButton>
+                                                </Stack>
                                                 <div>
                                                     {handleTooLong(data.remark)}
                                                 </div>
                                             </Stack>
                                         </Grid>
                                     </Grid>
+                                </TableCell>
+                                <TableCell>
+                                    <Stack direction='row' sx={{width:'100%'}} justifyContent='space-evenly'>
+                                        <Tooltip title={`Open ${data.userName}'s Twitter`}>
+                                            <IconButton size='small' sx={{borderRadius:'50%'}} onClick={() => handleRedirect(data.userName)}>
+                                                <img src={twitterBird} alt='' style={{width:'20px', height:'20px', borderRadius:'50%'}} />
+                                            </IconButton>
+                                        </Tooltip>
+                                        {data.websiteUrl !== '-' && 
+                                        (
+                                            <Tooltip title={`Open other associated website to the ${data.userName}`}>
+                                                <IconButton size='small' sx={{borderRadius:'50%'}} onClick={() => handleRedirectWebsite(data.websiteUrl)}>
+                                                    <GlobeAltIcon style={{width:'20px', height:'20px', borderRadius:'50%'}} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                    </Stack>
                                 </TableCell>
                                 <TableCell >
                                     <Box 

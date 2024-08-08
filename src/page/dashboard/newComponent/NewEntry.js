@@ -51,7 +51,6 @@ export default function NewEntry({ onClose, prevData, isRequest=false }) {
     })
 
     const {
-        setValue,
         reset,
         watch,
         control,
@@ -131,10 +130,6 @@ export default function NewEntry({ onClose, prevData, isRequest=false }) {
                 alert('Failure in saving data, contact admin');
             }
         }
-    }
-
-    if (watchName) {
-        setValue('websiteUrl', `https://x.com/${watchName}/media`)
     }
 
     return (
@@ -229,7 +224,7 @@ export default function NewEntry({ onClose, prevData, isRequest=false }) {
                                 <Typography variant='caption'>Provide Remark for This Artist :</Typography>
                                 <RHFTextField name='remark' label="Remark" sx={{textTransform: 'capitalize'}} />
                             </Stack>
-                            <RHFTextField name="websiteUrl" label={!watchName? "Website URL" : null} />
+                            <RHFTextField name="websiteUrl" label="Website URL" />
                             <RHFTextField name="charOrigin" label="Origin" />
                             <LoadingButton fullWidth type="submit" variant="contained" loading={isSubmitting}>
                                 Create new list
