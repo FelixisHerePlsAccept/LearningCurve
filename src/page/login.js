@@ -1,19 +1,21 @@
 import React, { useContext, useMemo, useState } from 'react'
-
-import FormProvider from '../component/hook-form/FormProvider'
 import { useForm } from 'react-hook-form'
-import { RHFTextField } from '../component/hook-form'
 import { LoadingButton } from '@mui/lab'
 import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth, db } from '../firebase'
-import AuthContext from '../Provider/AuthProvider/AuthGuard'
 import { Box, IconButton, InputAdornment, Stack, Typography } from '@mui/material'
-import MediaContext from '../Provider/MediaProvider/MediaProvider'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid'
 import { doc, getDoc } from 'firebase/firestore'
-
+import { useNavigate } from 'react-router-dom'
+import MediaContext from '../Provider/MediaProvider/MediaProvider'
+import { auth, db } from '../firebase'
+import AuthContext from '../Provider/AuthProvider/AuthGuard'
+import { RHFTextField } from '../component/hook-form'
+import FormProvider from '../component/hook-form/FormProvider'
+import { PATH_MAIN } from '../routes/paths'
 
 export default function Login() {
+
+    const navigate = useNavigate()
 
     const [showPassword, setShowPassword] = useState(false)
 
@@ -47,7 +49,11 @@ export default function Login() {
             const userDoc = await getDoc(doc(db, "userData", user))
             const userData = userDoc.data()
             dispatch({type:'LOGIN', payload: userData})
-            window.location.reload()
+            await new Promise((resolve) => {
+                window.location.reload();
+                resolve();
+            });
+            navigate(PATH_MAIN.datalist);
         } catch (error) {
             console.error('Fail', error)
         }
