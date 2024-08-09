@@ -7,8 +7,6 @@ import { LoadingButton } from '@mui/lab'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth, db } from '../firebase'
 import AuthContext from '../Provider/AuthProvider/AuthGuard'
-import { useNavigate } from 'react-router'
-import { PATH_MAIN } from '../routes/paths'
 import { Box, IconButton, InputAdornment, Stack, Typography } from '@mui/material'
 import MediaContext from '../Provider/MediaProvider/MediaProvider'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid'
@@ -23,8 +21,6 @@ export default function Login() {
     const {isMobile} = useContext(MediaContext)
 
     console.log(isMobile ? 'isMobile' : 'isNotMobile')
-
-    const navigate = useNavigate()
 
     const defaultValue = useMemo (
         () => ({
@@ -51,7 +47,7 @@ export default function Login() {
             const userDoc = await getDoc(doc(db, "userData", user))
             const userData = userDoc.data()
             dispatch({type:'LOGIN', payload: userData})
-            navigate(PATH_MAIN.datalist)
+            window.location.reload()
         } catch (error) {
             console.error('Fail', error)
         }
@@ -102,7 +98,7 @@ export default function Login() {
                                     )
                                 }}
                             />
-                            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+                            <LoadingButton type="submit" variant="contained" loading={ isSubmitting }>
                                 Login
                             </LoadingButton>
                             <Stack direction='row' sx={{justifyContent:'center', alignItems:'center'}} spacing={1}>
@@ -166,7 +162,7 @@ export default function Login() {
                                 )
                             }}
                         />
-                        <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
+                        <LoadingButton type="submit" variant="contained" loading={ isSubmitting }>
                             Login
                         </LoadingButton>
                         <Stack direction='row' sx={{justifyContent:'center', alignItems:'center'}} spacing={1}>
