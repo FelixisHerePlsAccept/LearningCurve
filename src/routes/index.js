@@ -11,19 +11,19 @@ Testing2,
 Notification,
 } from './element';
 import AuthContext from '../Provider/AuthProvider/AuthGuard';
-import DataContext from '../Provider/DataProvider/DataProvider';
 
 export const ROOT_DASHBOARD = '/customlinktree'
 
 export default function Router() {
 
     const { currentUser } = useContext(AuthContext)
-    const { maxQuota } = useContext(DataContext)
-
-    console.log(maxQuota)
 
     const LimitEntrance = ({children}) => {
-        return currentUser ? children : <Navigate to='/login' replace />
+        if (currentUser) {
+            return children
+        } else {
+            return <Navigate to='/login' replace />
+        }
     }
 
     return useRoutes([
