@@ -1,5 +1,6 @@
-import { deleteDoc, doc, setDoc} from 'firebase/firestore'
-import React, { useCallback, useContext, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { addDoc, collection, deleteDoc, doc, setDoc} from 'firebase/firestore'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Alert, Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, FormControl, Grid, IconButton, InputAdornment, InputLabel, MenuItem, Popover, Select, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Tooltip, Typography } from '@mui/material'
 import moment from 'moment'
 import { saveAs } from 'file-saver'
@@ -33,8 +34,15 @@ const REF_TYPE =[
 
 export default function DataTable() {
 
+    const location = useLocation();
+    const { search, userSearch } = location.state || { search: false, userSearch: '' };
+
+    console.log('search', search, 'userSearch', userSearch)
+
     const { dataRetrieved, maxQuota } = useContext(DataContext)
     const { currentUser } = useContext(AuthContext)
+
+    console.log('dataRetrieved', dataRetrieved)
 
     const [dataArr] = useState( dataRetrieved || [])
     const [openCreate, setOpenCreate] = useState(false)
@@ -59,11 +67,11 @@ export default function DataTable() {
     const dataArrFiltered = dataArr?.filter((data) => data.docId !== 'null')
 
     const dataWithNum = dataArrFiltered
-    ?.sort((a,b) => a.createdDate.localeCompare(b.createdDate))
+    ?.sort((a,b) => moment(a.createdDate).format('YYYYMMDD HH:mm').localeCompare(moment(b.createdDate).format('YYYYMMDD HH:mm')))
     .map((data, index) => ({
         num: index + 1,
         id: data.docId,
-        date: moment(data.createdDate).format('DD/MM/YYYY'),
+        date: moment(data.createdDate).format('DD MMMM YYYY'),
         time: moment(data.createdDate).format('hh:mm A'),
         ...data,
     }))
@@ -72,6 +80,14 @@ export default function DataTable() {
         setPage(0)
         setFilterName(event.target.value)
     }
+
+    useEffect (() => {
+        if (search) {
+            setOnSort('')
+            setTag('all')
+            setFilterName(userSearch)
+        }
+    }, [search, userSearch])
 
     const handleSelectSort = (event) => {
         setOnSort(event.target.value)
@@ -136,6 +152,15 @@ export default function DataTable() {
                 userTag: data?.userTag || "-",
                 reasonForDeletion: reason || "No reason provided",   
             })
+            const notifyStatus = await addDoc(collection(db, "NotificationStatus"), {
+                requestedBy: currentUser?.userName || "-",
+                userName: data?.userName || "-",
+                notifyType: 'delete',
+                status: 'pending',
+            })
+            await setDoc(doc(db, "NotificationStatus", notifyStatus.id), {
+                docId: notifyStatus.id
+            },{ merge: true })
             setReason('')
         } else {
             const docRef = doc(db, "MYBOOKMARKS", data.id);
@@ -508,7 +533,7 @@ export default function DataTable() {
                                 <TableCell />
                                 <TableCell>
                                     <Stack direction='column' spacing={1}>
-                                        <Typography variant='body1'>
+                                        <Typography variant='subtitle2'>
                                             {data.date}
                                         </Typography>
                                         <Typography variant='caption'>

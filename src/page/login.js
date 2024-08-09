@@ -40,6 +40,7 @@ export default function Login() {
 
     const {
         handleSubmit,
+        formState: { isSubmitting },
     } = methods
 
     const onSubmit =  async (data) => {
@@ -101,7 +102,7 @@ export default function Login() {
                                     )
                                 }}
                             />
-                            <LoadingButton type="submit" variant="contained">
+                            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
                                 Login
                             </LoadingButton>
                             <Stack direction='row' sx={{justifyContent:'center', alignItems:'center'}} spacing={1}>
@@ -165,7 +166,7 @@ export default function Login() {
                                 )
                             }}
                         />
-                        <LoadingButton type="submit" variant="contained">
+                        <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
                             Login
                         </LoadingButton>
                         <Stack direction='row' sx={{justifyContent:'center', alignItems:'center'}} spacing={1}>

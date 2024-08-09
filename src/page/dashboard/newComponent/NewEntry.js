@@ -123,6 +123,13 @@ export default function NewEntry({ onClose, prevData, isRequest=false }) {
                 await setDoc(doc(db, "RequestCreate", retrieveID.id), {
                     docId: retrieveID.id
                 },{ merge: true })
+                // =================================================================
+                await setDoc(collection(db, "NotificationStatus", retrieveID.id), {
+                    requestedBy: currentUser?.userName || "-",
+                    userName: data?.userName || "-",
+                    notifyType: 'create',
+                    status: 'pending',
+                })
                 onClose()
                 reset(defaultValue)
             } catch (error) {
@@ -194,8 +201,9 @@ export default function NewEntry({ onClose, prevData, isRequest=false }) {
                                         <MenuItem value={'Artist'}>Artist</MenuItem>
                                         <MenuItem value={'Cosplay'}>Cosplay</MenuItem>
                                         <MenuItem value={'Pose Reference'}>Pose Reference</MenuItem>
-                                        <MenuItem value={'Fashion Reference'}>Fashion Reference</MenuItem>
+                                        <MenuItem value={'Fashion Reference'}>Fashion/Character Reference</MenuItem>
                                         <MenuItem value={'Fiction Character'}>Fiction Character</MenuItem>
+                                        <MenuItem value={'Tutorial'}>Tutorial</MenuItem>
                                     </RHFSelect>
                                 )}
                             />

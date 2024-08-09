@@ -25,6 +25,11 @@ const DataReducer = (state, action) => {
                 ...state,
                 notificationUpdate: action.payload
             }
+        case 'REQ_STATUS':
+            return {
+                ...state,
+                reqStatus: action.payload
+            }
         default:
             return state
     }

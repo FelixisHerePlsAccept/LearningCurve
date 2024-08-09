@@ -95,6 +95,12 @@ export default function EditData({ editData, onClose, isRequest=false}) {
                     createdDate: moment(editData?.createdDate).format('YYYY-MM-DD hh:mm:ss A') || "-",
                     requestedDate: moment(new Date()).format('YYYY-MM-DD hh:mm:ss A'),
                 })
+                await setDoc(doc(db, "NotificationStatus", editData.id), {
+                    requestedBy: currentUser?.userName || "-",
+                    userName: data?.userName || "-",
+                    notifyType: 'update',
+                    status: 'pending',
+                })
                 onClose()
             } catch (error) {
                 console.log(error)
@@ -154,6 +160,7 @@ export default function EditData({ editData, onClose, isRequest=false}) {
                                             <MenuItem value={'Pose Reference'}>Pose Reference</MenuItem>
                                             <MenuItem value={'Fashion Reference'}>Fashion Reference</MenuItem>
                                             <MenuItem value={'Fiction Character'}>Fiction Character</MenuItem>
+                                            <MenuItem value={'Tutorial'}>Tutorial</MenuItem>
                                         </RHFSelect>
                                     )}
                                 />
