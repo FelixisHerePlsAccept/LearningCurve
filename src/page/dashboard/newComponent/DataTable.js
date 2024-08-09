@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useLocation } from 'react-router-dom'
 import { addDoc, collection, deleteDoc, doc, setDoc} from 'firebase/firestore'
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
@@ -14,11 +13,6 @@ import { DocumentArrowDownIcon, EllipsisVerticalIcon, GlobeAltIcon, MagnifyingGl
 import DataContext from '../../../Provider/DataProvider/DataProvider'
 import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
 import twitterBird from '../mock/twitter-bird.png'
-
-// DataTable.propTypes = {
-//     search: PropTypes.bool,
-//     userSearch: PropTypes.string
-// }
 
 const REF_TYPE =[
     {
