@@ -33,7 +33,7 @@ export const DataProvider = ({ children }) => {
                         console.error("Error fetching documents:", error);
                     }
                 })
-                const unsubcribeCreate = onSnapshot(collection(db, "RequestCreate"), (querySnapshot) => {
+                const unsubscribeCreate = onSnapshot(collection(db, "RequestCreate"), (querySnapshot) => {
                     const documentCreate = querySnapshot.docs.map((doc) => ({
                         docId: doc.id,
                         ...doc.data(),
@@ -78,12 +78,28 @@ export const DataProvider = ({ children }) => {
                         console.error("Error fetching documents:", error);
                     }
                 })
+                const unsubscribeNotifyStatus = onSnapshot(collection(db, "NotificationStatus"), (querySnapshot) => {
+                    const documentStatus = querySnapshot?.docs.map((doc) => ({
+                        docId: doc.id,
+                        ...doc.data(),
+                    }))
+                    dispatch({ type: 'REQ_STATUS', payload: documentStatus })
+                    console.log('Triggered here Read')
+                }, (error) => {
+                    if (error.code === 'resource-exhausted') {
+                        dispatch({type: 'QUOTA_MAX', payload: true})
+                        alert('Sorry, Free Quota is exhausted. Retry tomorrow at 3pm.')
+                    } else {
+                        console.error("Error fetching documents:", error);
+                    }
+                })     
 
                 return () => {
-                    unsubscribeRead()
-                    unsubcribeCreate()
-                    unsubscribeUpdate()
-                    unsubscribeRemove()
+                    unsubscribeRead();
+                    unsubscribeCreate();
+                    unsubscribeUpdate();
+                    unsubscribeRemove();
+                    unsubscribeNotifyStatus();
                 }
             } else {
                 console.log('Triggered no auth')
@@ -101,9 +117,10 @@ export const DataProvider = ({ children }) => {
             notifyAdd: state.notificationAdd,
             notifyRemove: state.notificationRemove,
             notifyUpdate: state.notificationUpdate,
+            requestStatus: state.reqStatus,
             maxQuota: state.quotaMax
         }),
-        [state.dataRetrieved, state.quotaMax, state.notificationAdd, state.notificationRemove, state.notificationUpdate]
+        [state.dataRetrieved, state.notificationAdd, state.notificationRemove, state.notificationUpdate, state.reqStatus, state.quotaMax]
     )
 
     return (

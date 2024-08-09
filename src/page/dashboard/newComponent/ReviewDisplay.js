@@ -1,11 +1,12 @@
 import React, { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Alert, Box, Button, Divider, Grid, Stack, Typography } from '@mui/material'
-import { deleteDoc, doc, setDoc } from 'firebase/firestore'
+import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
 import { db } from '../../../firebase'
 import moment from 'moment'
 import { LoadingButton } from '@mui/lab'
 import DataContext from '../../../Provider/DataProvider/DataProvider'
+import AuthContext from '../../../Provider/AuthProvider/AuthGuard'
 
 ReviewDisplay.propTypes = {
     dataPassed: PropTypes.object,
@@ -17,13 +18,15 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
 
     const [isLoading, setIsLoading] = useState(false)
 
-    const { dataRetrieved } = useContext(DataContext)
+    const { dataRetrieved, requestStatus } = useContext(DataContext)
+    const { currentUser } = useContext(AuthContext)
 
     console.log(dataRetrieved)
+    console.log('requestStatus', requestStatus)
 
     const dataUpdate = dataRetrieved?.filter(data => data.docId === dataPassed?.docId)
 
-    console.log('dataPassed', dataPassed)
+    console.log('dataPassed.?createdDate', dataPassed)
 
     console.log('dataUpdate', dataUpdate)
 
@@ -86,6 +89,9 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 createdDate: moment(dataPassed?.createdDate).format('YYYY-MM-DD hh:mm:ss A'),
             })
             await deleteDoc(doc(db, "RequestCreate", dataPassed?.docId))
+            await updateDoc(doc(db, "NotificationStatus", dataPassed?.docId), {
+                status: 'accepted'
+            })
             setIsLoading(false)
         } catch (error) {
             console.log(error)
@@ -104,9 +110,12 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 websiteUrl: dataPassed?.websiteUrl || "-",
                 charOrigin: dataPassed?.charOrigin || "-",
                 remark: dataPassed?.remark || "-",
-                createdDate: dataUpdate?.createdDate || "-"
+                createdDate: moment(dataPassed?.createdDate).format('YYYY-MM-DD hh:mm:ss A') || "-"
             })
             await deleteDoc(doc(db, "RequestedChange", dataPassed?.docId))
+            await updateDoc(doc(db, "NotificationStatus", dataPassed?.docId), {
+                status: 'accepted'
+            })
             setIsLoading(false)
         } catch (error) {
             console.log(error)
@@ -119,6 +128,9 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
             const docRef = doc(db, "MYBOOKMARKS", dataPassed?.docId)
             await deleteDoc(docRef)    
             await deleteDoc(doc(db, "RequestedDelete", dataPassed?.docId))
+            await updateDoc(doc(db, "NotificationStatus", dataPassed?.docId), {
+                status: 'accepted'
+            })
             setIsLoading(false)
         } catch (error) {
             console.log(error)
@@ -410,6 +422,17 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                         </Stack>
                     </Grid>
                 </Grid>
+            </Box>
+        )
+    }
+
+    if (currentUser.userName === dataPassed?.requestedBy) {
+        return (
+            <Box sx={{
+                width:'100%',
+            }}
+            >
+                Hi
             </Box>
         )
     }

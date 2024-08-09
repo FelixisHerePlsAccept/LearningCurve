@@ -11,7 +11,17 @@ import DataContext from '../../Provider/DataProvider/DataProvider';
 export default function MainLayout() {
 
     const { currentUser, dispatch } = useContext(AuthContext)
-    const { notifyAdd, notifyRemove, notifyUpdate } = useContext(DataContext)
+    const { notifyAdd, notifyRemove, notifyUpdate, requestStatus } = useContext(DataContext)
+
+    
+    const FilteredStatus = requestStatus
+        ?.filter(data => 
+            data.docId  !== 'null' 
+            && 
+            data?.requestedBy === currentUser?.userName
+            &&
+            data?.status === 'pending'
+        )
 
     const FilteredAdd = notifyAdd?.filter(data => data.docId !== 'null')
     const FilteredRemove = notifyRemove?.filter(data => data.docId !== 'null')
@@ -74,6 +84,21 @@ export default function MainLayout() {
                                                 }}>
                                                     <Typography variant='inherit' sx={{color:'white'}}>
                                                         {TOTAL_NOTIFICATION}
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                            { currentUser?.userRole === 'User' && FilteredStatus?.length > 0 && (
+                                                <Box sx={{
+                                                    borderRadius:'50%',
+                                                    bgcolor:'red',
+                                                    width:"1.5rem",
+                                                    height:"1.5rem",
+                                                    display:'flex',
+                                                    justifyContent:'center',
+                                                    alignItems:'center',
+                                                }}>
+                                                    <Typography variant='inherit' sx={{color:'white'}}>
+                                                        {FilteredStatus.length}
                                                     </Typography>
                                                 </Box>
                                             )}
