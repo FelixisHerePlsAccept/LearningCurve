@@ -93,6 +93,7 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 status: 'accepted'
             })
             setIsLoading(false)
+            onClose()
         } catch (error) {
             console.log(error)
             alert('Failure in Try Catch')
@@ -117,6 +118,7 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 status: 'accepted'
             })
             setIsLoading(false)
+            onClose()
         } catch (error) {
             console.log(error)
             alert('Failure in Try Catch')
@@ -132,6 +134,7 @@ export default function ReviewDisplay({ dataPassed, requestType, onClose }) {
                 status: 'accepted'
             })
             setIsLoading(false)
+            onClose()
         } catch (error) {
             console.log(error)
             alert('Failure in Try Catch')

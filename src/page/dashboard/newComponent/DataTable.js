@@ -44,7 +44,7 @@ export default function DataTable() {
 
     console.log('dataRetrieved', dataRetrieved)
 
-    const [dataArr] = useState( dataRetrieved || [])
+    const [dataArr, setDataArr] = useState(dataRetrieved || [])
     const [openCreate, setOpenCreate] = useState(false)
     const [filterStatus, setFilterStatus] = useState('all')
     const [filterName, setFilterName] = useState('')
@@ -64,10 +64,16 @@ export default function DataTable() {
         onChangeRowsPerPage,
     } = useTable()
 
+    useEffect(() => {
+        if (dataRetrieved) {
+            setDataArr(dataRetrieved)
+        }
+    }, [dataRetrieved])
+
     const dataArrFiltered = dataArr?.filter((data) => data.docId !== 'null')
 
     const dataWithNum = dataArrFiltered
-    ?.sort((a,b) => moment(a.createdDate).format('YYYYMMDD HH:mm').localeCompare(moment(b.createdDate).format('YYYYMMDD HH:mm')))
+    ?.sort((a,b) => moment(a.createdDate).format('YYYYMMDDHHmm').localeCompare(moment(b.createdDate).format('YYYYMMDDHHmm')))
     .map((data, index) => ({
         num: index + 1,
         id: data.docId,
@@ -620,10 +626,10 @@ function applyfilter ({ inputData, filterStatus, filterName, onSort, tag }) {
             inputData.sort((b,a) => a.userName.localeCompare(b.userName))
             break
         case 'DateCreated':
-            inputData.sort((a,b) => a.createdDate.localeCompare(b.createdDate))
+            inputData.sort((a,b) => moment(a.createdDate).format('YYYYMMDDHHmm').localeCompare(moment(b.createdDate).format('YYYYMMDDHHmm')))
             break
         case 'DateCreatedReverse':
-            inputData.sort((b,a) => a.createdDate.localeCompare(b.createdDate))
+            inputData.sort((a,b) => moment(b.createdDate).format('YYYYMMDDHHmm').localeCompare(moment(a.createdDate).format('YYYYMMDDHHmm')))
             break
         default:
             inputData.sort((a,b) => a.num - b.num)
