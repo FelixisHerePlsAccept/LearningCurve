@@ -124,7 +124,7 @@ export default function NewEntry({ onClose, prevData, isRequest=false }) {
                     docId: retrieveID.id
                 },{ merge: true })
                 // =================================================================
-                await setDoc(collection(db, "NotificationStatus", retrieveID.id), {
+                await setDoc(doc(db, "NotificationStatus", retrieveID.id), {
                     requestedBy: currentUser?.userName || "-",
                     userName: data?.userName || "-",
                     notifyType: 'create',
